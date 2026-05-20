@@ -1,0 +1,9 @@
+torch
+tqdm
+safetensors
+transformers
+accelerate
+optimum
+huggingface-hub
+scipy
+kernels

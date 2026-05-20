@@ -2,17 +2,17 @@
 from transformers import GenerationConfig
 
 
-from .airllm_base import AirLLMBaseModel
+from .airllm_base import BetterAirLLMBaseModel
 
 
 
-class AirLLMQWen2(AirLLMBaseModel):
+class BetterAirLLMQWen2(BetterAirLLMBaseModel):
 
 
     def __init__(self, *args, **kwargs):
 
 
-        super(AirLLMQWen2, self).__init__(*args, **kwargs)
+        super(BetterAirLLMQWen2, self).__init__(*args, **kwargs)
 
     def get_use_better_transformer(self):
         return False

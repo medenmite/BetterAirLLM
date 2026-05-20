@@ -1,10 +1,10 @@
 
 
-from .airllm_base import AirLLMBaseModel
+from .airllm_base import BetterAirLLMBaseModel
 
 
 
-class AirLLMLlama2(AirLLMBaseModel):
+class BetterAirLLMLlama2(BetterAirLLMBaseModel):
     def __init__(self, *args, **kwargs):
-        super(AirLLMLlama2, self).__init__(*args, **kwargs)
+        super(BetterAirLLMLlama2, self).__init__(*args, **kwargs)
 

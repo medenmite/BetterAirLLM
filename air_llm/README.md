@@ -6,7 +6,7 @@
 [**Example notebooks**](#example-python-notebook) | 
 [**FAQ**](#faq)
 
-**AirLLM** optimizes inference memory usage, allowing 70B large language models to run inference on a single 4GB GPU card. No quantization, distillation, pruning or other model compression techniques that would result in degraded model performance are needed.
+**BetterAirLLM** optimizes inference memory usage, allowing 70B large language models to run inference on a single 4GB GPU card. No quantization, distillation, pruning or other model compression techniques that would result in degraded model performance are needed.
 
 <a href="https://github.com/lyogavin/Anima/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/lyogavin/Anima?style=social)</a>
 [![Downloads](https://static.pepy.tech/personalized-badge/airllm?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/airllm)
@@ -15,7 +15,7 @@
 [![Generic badge](https://img.shields.io/badge/wechat-Anima-brightgreen?logo=wechat)](https://static.aicompose.cn/static/wecom_barcode.png?t=1671918938)
 [![Discord](https://img.shields.io/discord/1175437549783760896?logo=discord&color=7289da
 )](https://discord.gg/2xffU5sn)
-[![PyPI - AirLLM](https://img.shields.io/pypi/format/airllm?logo=pypi&color=3571a3)
+[![PyPI - BetterAirLLM](https://img.shields.io/pypi/format/airllm?logo=pypi&color=3571a3)
 ](https://pypi.org/project/airllm/)
 [![Website](https://img.shields.io/website?up_message=blog&url=https%3A%2F%2Fmedium.com%2F%40lyo.gavin&logo=medium&color=black)](https://medium.com/@lyo.gavin)
 [![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dgavinli%26type%3Dpatrons&style=flat)](https://patreon.com/gavinli)
@@ -24,11 +24,11 @@
 
 ## Updates
 
-[2024/04/20] AirLLM supports Llama3 natively already. Run Llama3 70B on 4GB single GPU.
+[2024/04/20] BetterAirLLM supports Llama3 natively already. Run Llama3 70B on 4GB single GPU.
 
 [2023/12/25] v2.8.2: Support MacOS running 70B large language models.
 
-[2023/12/20] v2.7: Support AirLLMMixtral. 
+[2023/12/20] v2.7: Support BetterAirLLMMixtral. 
 
 [2023/12/20] v2.6: Added AutoModel, automatically detect model type, no need to provide model class to initialize model.
 
@@ -65,9 +65,9 @@ pip install airllm
 
 ### 2. Inference
 
-Then, initialize AirLLMLlama2, pass in the huggingface repo ID of the model being used, or the local path, and inference can be performed similar to a regular transformer model.
+Then, initialize BetterAirLLMLlama2, pass in the huggingface repo ID of the model being used, or the local path, and inference can be performed similar to a regular transformer model.
 
-(*You can also specify the path to save the splitted layered model through **layer_shards_saving_path** when init AirLLMLlama2.*
+(*You can also specify the path to save the splitted layered model through **layer_shards_saving_path** when init BetterAirLLMLlama2.*
 
 ```python
 from airllm import AutoModel
@@ -139,7 +139,7 @@ When initialize the model, we support the following configurations:
 * **profiling_mode**: supported options: True to output time consumptions or by default False
 * **layer_shards_saving_path**: optionally another path to save the splitted model
 * **hf_token**: huggingface token can be provided here if downloading gated models like: *meta-llama/Llama-2-7b-hf*
-* **prefetching**: prefetching to overlap the model loading and compute. By default, turned on. For now, only AirLLMLlama2 supports this.
+* **prefetching**: prefetching to overlap the model loading and compute. By default, turned on. For now, only BetterAirLLMLlama2 supports this.
 * **delete_original**: if you don't have too much disk space, you can set delete_original to true to delete the original downloaded hugging face model, only keep the transformed one to save half of the disk space. 
 
 ## MacOS
@@ -262,14 +262,14 @@ Most likely you are loading QWen or ChatGLM model with Llama2 class. Try the fol
 For QWen model: 
 
 ```python
-from airllm import AutoModel #<----- instead of AirLLMLlama2
+from airllm import AutoModel #<----- instead of BetterAirLLMLlama2
 AutoModel.from_pretrained(...)
 ```
 
 For ChatGLM model: 
 
 ```python
-from airllm import AutoModel #<----- instead of AirLLMLlama2
+from airllm import AutoModel #<----- instead of BetterAirLLMLlama2
 AutoModel.from_pretrained(...)
 ```
 
@@ -295,16 +295,16 @@ input_tokens = model.tokenizer(input_text,
 )
 ```
 
-## Citing AirLLM
+## Citing BetterAirLLM
 
 If you find
-AirLLM useful in your research and wish to cite it, please use the following
+BetterAirLLM useful in your research and wish to cite it, please use the following
 BibTex entry:
 
 ```
 @software{airllm2023,
   author = {Gavin Li},
-  title = {AirLLM: scaling large language models on low-end commodity computers},
+  title = {BetterAirLLM: scaling large language models on low-end commodity computers},
   url = {https://github.com/lyogavin/Anima/tree/main/air_llm},
   version = {0.0},
   year = {2023},

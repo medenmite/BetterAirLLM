@@ -1,0 +1,1 @@
+{"architectures": ["GptOssForCausalLM"], "model_type": "gpt_oss", "quantization_config": {"quant_method": "mxfp4"}}

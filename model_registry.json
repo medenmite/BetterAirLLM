@@ -1,0 +1,80 @@
+[
+  {
+    "id": "qwen3.6-35b-a3b",
+    "repo_id": "Qwen/Qwen3.6-35B-A3B",
+    "description": "Qwen3.6 35B MoE (3B active) with selective routed expert streaming",
+    "family": "qwen3_5_moe",
+    "prompt_format": "tokenizer_chat_template",
+    "status": "experimental",
+    "tested_level": "adapter_correctness",
+    "quantization": null,
+    "memory": {
+      "mode": "selective_moe_streaming",
+      "active_parameters": "3B",
+      "notes": "Uses strict routed expert streaming when the Qwen3.5/Qwen3.6 layout is detected."
+    },
+    "context_length": 2048,
+    "known_limitations": [
+      "Visual/image content is guarded and not enabled by the BetterAirLLM server path.",
+      "Selective runtime is experimental and should be validated on target hardware."
+    ],
+    "compression": null,
+    "max_seq_len": 2048
+  },
+  {
+    "id": "qwen3-30b-a3b",
+    "repo_id": "Qwen/Qwen3-30B-A3B",
+    "description": "Qwen3 30B MoE (3B active) - fast and capable",
+    "family": "qwen_moe",
+    "prompt_format": "tokenizer_chat_template",
+    "status": "experimental",
+    "tested_level": "architecture_dispatch",
+    "quantization": null,
+    "memory": {
+      "mode": "airllm_layer_streaming",
+      "active_parameters": "3B"
+    },
+    "context_length": 2048,
+    "known_limitations": [
+      "Fast selective runtime is only claimed for layouts with model-specific adapter tests."
+    ],
+    "compression": null,
+    "max_seq_len": 2048
+  },
+  {
+    "id": "mistral-7b-instruct",
+    "repo_id": "mistralai/Mistral-7B-Instruct-v0.1",
+    "description": "Mistral 7B Instruct - general purpose",
+    "family": "mistral",
+    "prompt_format": "tokenizer_chat_template",
+    "status": "supported",
+    "tested_level": "architecture_dispatch",
+    "quantization": null,
+    "memory": {
+      "mode": "airllm_layer_streaming"
+    },
+    "context_length": 2048,
+    "known_limitations": [],
+    "compression": null,
+    "max_seq_len": 2048
+  },
+  {
+    "id": "llama2-7b-chat",
+    "repo_id": "meta-llama/Llama-2-7b-chat-hf",
+    "description": "Llama 2 7B Chat - requires HF token",
+    "family": "llama",
+    "prompt_format": "tokenizer_chat_template",
+    "status": "supported",
+    "tested_level": "architecture_dispatch",
+    "quantization": null,
+    "memory": {
+      "mode": "airllm_layer_streaming"
+    },
+    "context_length": 2048,
+    "known_limitations": [
+      "Requires a Hugging Face token with access to the gated model."
+    ],
+    "compression": null,
+    "max_seq_len": 2048
+  }
+]

@@ -1,0 +1,280 @@
+{
+  "decode_seconds": 300.7417660999927,
+  "generated_tokens": 32,
+  "seconds_per_token": 9.398180190624771,
+  "timing_coverage_ratio": 1.0,
+  "unaccounted_time_seconds": 0.0,
+  "time_per_token_breakdown": {
+    "layer_dense_load_seconds": 118.14193391823021,
+    "layer_move_to_device_seconds": 19.011343446908345,
+    "attention_seconds": 2.23754026938737,
+    "router_seconds": 0.1595143015737891,
+    "selected_expert_direct_slice_seconds": 52.19265330822123,
+    "packed_mxfp4_transfer_seconds": 0.0,
+    "mxfp4_unpack_dequant_seconds": 36.48266544785678,
+    "gate_up_matmul_seconds": 1.2563082170551054,
+    "activation_seconds": 3.584715409458378,
+    "down_matmul_seconds": 1.1299536872432983,
+    "expert_aggregation_seconds": 54.75674867037252,
+    "cache_lookup_seconds": 0.0,
+    "cleanup_seconds": 11.400923186556161,
+    "sampling_logits_lm_head_seconds": 0.38678913666363496,
+    "tokenizer_decode_output_cleaning_seconds": 0.0006771004658684683,
+    "python_overhead_unaccounted_seconds": 0.0
+  },
+  "raw_cumulative_timing_breakdown": {
+    "layer_dense_load_seconds": 175.73840500017104,
+    "layer_move_to_device_seconds": 28.27973999970709,
+    "attention_seconds": 3.3283843003446236,
+    "router_seconds": 0.2372805997292744,
+    "selected_expert_direct_slice_seconds": 77.6375783002004,
+    "packed_mxfp4_transfer_seconds": 0.0,
+    "mxfp4_unpack_dequant_seconds": 54.26866840015282,
+    "gate_up_matmul_seconds": 1.8687827000248944,
+    "activation_seconds": 5.332333300670143,
+    "down_matmul_seconds": 1.6808279002580093,
+    "expert_aggregation_seconds": 81.45171959845175,
+    "cache_lookup_seconds": 0.0,
+    "cleanup_seconds": 16.95909310001298,
+    "sampling_logits_lm_head_seconds": 0.5753562997851986,
+    "tokenizer_decode_output_cleaning_seconds": 0.001007200000458397
+  },
+  "raw_cumulative_seconds": 447.3591766995087,
+  "overlapped_or_double_counted_seconds": 146.617410599516,
+  "exclusive_breakdown_scale_factor": 0.6722601921766345,
+  "per_token_timing": {
+    "first_token_seconds": 50.317909000004875,
+    "token_2_plus_average_seconds": 8.078137529031899,
+    "average_per_token_excluding_first_seconds": 8.078137529031899,
+    "token_event_count": 32
+  },
+  "top_10_slowest_functions": [
+    {
+      "function": "airllm_base.py:678:__call__",
+      "file": "C:\\Users\\User\\Desktop\\Projects\\BetterAirLLM\\air_llm\\airllm\\airllm_base.py",
+      "line": 678,
+      "primitive_calls": 32,
+      "calls": 32,
+      "total_seconds": 0.10685220000000001,
+      "cumulative_seconds": 300.49038140000005
+    },
+    {
+      "function": "airllm_base.py:764:forward",
+      "file": "C:\\Users\\User\\Desktop\\Projects\\BetterAirLLM\\air_llm\\airllm\\airllm_base.py",
+      "line": 764,
+      "primitive_calls": 32,
+      "calls": 32,
+      "total_seconds": 0.0040095,
+      "cumulative_seconds": 300.3831199
+    },
+    {
+      "function": "grad_mode.py:293:__exit__",
+      "file": "C:\\Users\\User\\Desktop\\Projects\\BetterAirLLM\\.venv-cuda\\Lib\\site-packages\\torch\\autograd\\grad_mode.py",
+      "line": 293,
+      "primitive_calls": 32,
+      "calls": 32,
+      "total_seconds": 0.0012446,
+      "cumulative_seconds": 300.32615830000003
+    },
+    {
+      "function": "_base.py:646:__exit__",
+      "file": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\concurrent\\futures\\_base.py",
+      "line": 646,
+      "primitive_calls": 32,
+      "calls": 32,
+      "total_seconds": 0.0002527,
+      "cumulative_seconds": 300.2513611
+    },
+    {
+      "function": "thread.py:220:shutdown",
+      "file": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\concurrent\\futures\\thread.py",
+      "line": 220,
+      "primitive_calls": 32,
+      "calls": 32,
+      "total_seconds": 0.0002929,
+      "cumulative_seconds": 295.1586244
+    },
+    {
+      "function": "threading.py:1117:join",
+      "file": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\threading.py",
+      "line": 1117,
+      "primitive_calls": 33,
+      "calls": 33,
+      "total_seconds": 0.0006873000000000001,
+      "cumulative_seconds": 295.1574106
+    },
+    {
+      "function": "~:0:<method 'get' of '_queue.SimpleQueue' objects>",
+      "file": "~",
+      "line": 0,
+      "primitive_calls": 1152,
+      "calls": 1152,
+      "total_seconds": 3.6498293000000004,
+      "cumulative_seconds": 287.28580120000004
+    },
+    {
+      "function": "threading.py:1155:_wait_for_tstate_lock",
+      "file": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\threading.py",
+      "line": 1155,
+      "primitive_calls": 74,
+      "calls": 74,
+      "total_seconds": 0.0031821,
+      "cumulative_seconds": 269.82265970000003
+    },
+    {
+      "function": "module.py:1774:_wrapped_call_impl",
+      "file": "C:\\Users\\User\\Desktop\\Projects\\BetterAirLLM\\.venv-cuda\\Lib\\site-packages\\torch\\nn\\modules\\module.py",
+      "line": 1774,
+      "primitive_calls": 2400,
+      "calls": 13920,
+      "total_seconds": 0.0931884,
+      "cumulative_seconds": 236.99186690000002
+    },
+    {
+      "function": "modeling_layers.py:59:__call__",
+      "file": "C:\\Users\\User\\Desktop\\Projects\\BetterAirLLM\\.venv-cuda\\Lib\\site-packages\\transformers\\modeling_layers.py",
+      "line": 59,
+      "primitive_calls": 1152,
+      "calls": 1152,
+      "total_seconds": 0.011736600000000002,
+      "cumulative_seconds": 234.6824201
+    }
+  ],
+  "top_10_slowest_layers": [
+    {
+      "layer": "model.layers.0",
+      "layer_loop_seconds": 14.281531899992842,
+      "layer_forward_seconds": 8.845693600029335,
+      "mlp_total_seconds": 8.412965600029565,
+      "attention_seconds": 0.25101420003920794,
+      "router_seconds": 0.04480490001151338,
+      "direct_slice_seconds": 2.5919077999715228,
+      "mxfp4_dequant_seconds": 1.5137670997937676,
+      "expert_python_overhead_seconds": 4.130115099891555
+    },
+    {
+      "layer": "model.layers.6",
+      "layer_loop_seconds": 12.412706500006607,
+      "layer_forward_seconds": 7.048714200034738,
+      "mlp_total_seconds": 6.772843000027933,
+      "attention_seconds": 0.08595650005736388,
+      "router_seconds": 0.005189700023038313,
+      "direct_slice_seconds": 1.80040579996421,
+      "mxfp4_dequant_seconds": 1.3798253001150442,
+      "expert_python_overhead_seconds": 3.4453807997197146
+    },
+    {
+      "layer": "model.layers.14",
+      "layer_loop_seconds": 12.095690699963598,
+      "layer_forward_seconds": 6.327653300060774,
+      "mlp_total_seconds": 6.0595665000146255,
+      "attention_seconds": 0.08664249998400919,
+      "router_seconds": 0.00551680002536159,
+      "direct_slice_seconds": 1.7958643999882042,
+      "mxfp4_dequant_seconds": 1.465865600053803,
+      "expert_python_overhead_seconds": 2.6030612999165896
+    },
+    {
+      "layer": "model.layers.22",
+      "layer_loop_seconds": 11.916716900013853,
+      "layer_forward_seconds": 6.378702699963469,
+      "mlp_total_seconds": 6.112580599961802,
+      "attention_seconds": 0.06693160004215315,
+      "router_seconds": 0.005540400015888736,
+      "direct_slice_seconds": 1.7303462999552721,
+      "mxfp4_dequant_seconds": 1.5225901999801863,
+      "expert_python_overhead_seconds": 2.6781784001213964
+    },
+    {
+      "layer": "model.layers.30",
+      "layer_loop_seconds": 11.67012630001409,
+      "layer_forward_seconds": 6.062318900017999,
+      "mlp_total_seconds": 5.787845499944524,
+      "attention_seconds": 0.10295570001471788,
+      "router_seconds": 0.0057988999906228855,
+      "direct_slice_seconds": 1.4235050000424962,
+      "mxfp4_dequant_seconds": 1.6942430000344757,
+      "expert_python_overhead_seconds": 2.2868276999652153
+    },
+    {
+      "layer": "model.layers.1",
+      "layer_loop_seconds": 10.165435000017169,
+      "layer_forward_seconds": 8.911984200007282,
+      "mlp_total_seconds": 8.679120800021337,
+      "attention_seconds": 0.10788210002647247,
+      "router_seconds": 0.005395000029238872,
+      "direct_slice_seconds": 3.070829000149388,
+      "mxfp4_dequant_seconds": 1.5120019000023603,
+      "expert_python_overhead_seconds": 3.922606199819711
+    },
+    {
+      "layer": "model.layers.3",
+      "layer_loop_seconds": 9.727705999990576,
+      "layer_forward_seconds": 8.53605940003763,
+      "mlp_total_seconds": 8.258423600025708,
+      "attention_seconds": 0.1143982000357937,
+      "router_seconds": 0.0050666999886743724,
+      "direct_slice_seconds": 2.9379925000248477,
+      "mxfp4_dequant_seconds": 1.5140978000417817,
+      "expert_python_overhead_seconds": 3.54719930011197
+    },
+    {
+      "layer": "model.layers.4",
+      "layer_loop_seconds": 9.374616499990225,
+      "layer_forward_seconds": 8.081846900022356,
+      "mlp_total_seconds": 7.823732199991355,
+      "attention_seconds": 0.07651420004549436,
+      "router_seconds": 0.005242700019152835,
+      "direct_slice_seconds": 2.9550281000265386,
+      "mxfp4_dequant_seconds": 1.4691904999199323,
+      "expert_python_overhead_seconds": 3.245216299997992
+    },
+    {
+      "layer": "model.layers.7",
+      "layer_loop_seconds": 8.939354299989645,
+      "layer_forward_seconds": 7.862045100060641,
+      "mlp_total_seconds": 7.622085700015305,
+      "attention_seconds": 0.08702139995875768,
+      "router_seconds": 0.005756399972597137,
+      "direct_slice_seconds": 2.866943600049126,
+      "mxfp4_dequant_seconds": 1.3641119999665534,
+      "expert_python_overhead_seconds": 3.2494889001827687
+    },
+    {
+      "layer": "model.layers.5",
+      "layer_loop_seconds": 8.805668899978627,
+      "layer_forward_seconds": 7.363306300030672,
+      "mlp_total_seconds": 7.108912900002906,
+      "attention_seconds": 0.09809459999087267,
+      "router_seconds": 0.005497600068338215,
+      "direct_slice_seconds": 1.965922499919543,
+      "mxfp4_dequant_seconds": 1.453173700007028,
+      "expert_python_overhead_seconds": 3.555212199789821
+    }
+  ],
+  "instrumentation_notes": [
+    "packed_mxfp4_transfer_seconds is not independently timed by the reference path; transfer into CUDA is currently included in mxfp4_unpack_dequant_seconds.",
+    "cache_lookup_seconds is not independently timed by the current selected-expert adapter; cache hit/miss counts are still reported in runtime_stats.",
+    "expert_aggregation_seconds is derived from mlp_total minus directly measured expert work, so it includes index_add, routing-weight application, and residual adapter loop overhead.",
+    "raw_cumulative_timing_breakdown can exceed decode_seconds because dense prefetch, per-expert materialization, CUDA work, and thread waits overlap or nest.",
+    "time_per_token_breakdown is normalized to exclusive decode wall time when raw cumulative timings overlap.",
+    "python_overhead_unaccounted_seconds is the residual needed to reconcile exclusive category totals to decode_seconds."
+  ],
+  "runtime_stats_summary": {
+    "expert_cache_hits": 0,
+    "expert_cache_misses": 3014,
+    "gpu_packed_expert_cache_hits": 1738,
+    "gpu_packed_expert_cache_misses": 4349,
+    "gpu_packed_expert_bytes": 4182727680,
+    "gpu_packed_expert_bytes_avoided": 23005002240,
+    "cpu_expert_cache_hits": 1335,
+    "cpu_expert_cache_misses": 3014,
+    "dense_layer_cache_hits": 0,
+    "dense_layer_cache_misses": 0,
+    "packed_expert_bytes_loaded": 80570453760,
+    "direct_slice_expert_loads_this_run": 3014,
+    "direct_slice_packed_bytes_read_this_run": 39894750720,
+    "layer_forward_seconds": 231.88658710024902,
+    "layer_loop_seconds": 300.16991300022346
+  }
+}

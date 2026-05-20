@@ -1,11 +1,11 @@
-from airllm import AirLLMLlama2
+from airllm import BetterAirLLMLlama2
 
 MAX_LENGTH = 128
 # could use hugging face model repo id:
-model = AirLLMLlama2("garage-bAInd/Platypus2-70B-instruct")
+model = BetterAirLLMLlama2("garage-bAInd/Platypus2-70B-instruct")
 
 # or use model's local path...
-#model = AirLLMLlama2("/home/ubuntu/.cache/huggingface/hub/models--garage-bAInd--Platypus2-70B-instruct/snapshots/b585e74bcaae02e52665d9ac6d23f4d0dbc81a0f")
+#model = BetterAirLLMLlama2("/home/ubuntu/.cache/huggingface/hub/models--garage-bAInd--Platypus2-70B-instruct/snapshots/b585e74bcaae02e52665d9ac6d23f4d0dbc81a0f")
 
 input_text = [
         'What is the capital of United States?',

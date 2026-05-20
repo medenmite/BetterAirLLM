@@ -3,17 +3,17 @@ from transformers import GenerationConfig
 
 from .tokenization_baichuan import BaichuanTokenizer
 
-from .airllm_base import AirLLMBaseModel
+from .airllm_base import BetterAirLLMBaseModel
 
 
 
-class AirLLMBaichuan(AirLLMBaseModel):
+class BetterAirLLMBaichuan(BetterAirLLMBaseModel):
 
 
     def __init__(self, *args, **kwargs):
 
 
-        super(AirLLMBaichuan, self).__init__(*args, **kwargs)
+        super(BetterAirLLMBaichuan, self).__init__(*args, **kwargs)
 
     def get_use_better_transformer(self):
         return False

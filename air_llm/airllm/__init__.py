@@ -6,18 +6,34 @@ if platform == "darwin":
     is_on_mac_os = True
 
 if is_on_mac_os:
-    from .airllm_llama_mlx import AirLLMLlamaMlx
+    from .airllm_llama_mlx import BetterAirLLMLlamaMlx
     from .auto_model import AutoModel
 else:
-    from .airllm import AirLLMLlama2
-    from .airllm_chatglm import AirLLMChatGLM
-    from .airllm_qwen import AirLLMQWen
-    from .airllm_qwen2 import AirLLMQWen2
-    from .airllm_baichuan import AirLLMBaichuan
-    from .airllm_internlm import AirLLMInternLM
-    from .airllm_mistral import AirLLMMistral
-    from .airllm_mixtral import AirLLMMixtral
-    from .airllm_base import AirLLMBaseModel
+    from .airllm import BetterAirLLMLlama2
+    from .airllm_chatglm import BetterAirLLMChatGLM
+    from .airllm_qwen import BetterAirLLMQWen
+    from .airllm_qwen2 import BetterAirLLMQWen2
+    try:
+        from .airllm_baichuan import BetterAirLLMBaichuan
+    except ImportError:
+        BetterAirLLMBaichuan = None
+    from .airllm_internlm import BetterAirLLMInternLM
+    from .airllm_mistral import BetterAirLLMMistral
+    from .airllm_moe import BetterAirLLMMoE
+    from .airllm_mixtral import BetterAirLLMMixtral
+    from .airllm_base import BetterAirLLMBaseModel
+    from .selective_fused_moe import (
+        SelectiveFusedMoEAdapter,
+        FakeFusedMoEAdapter,
+        GptOssSelectiveFusedMoEAdapter,
+        Qwen35SelectiveFusedMoEAdapter,
+    )
+    from .gpt_oss_mxfp4 import (
+        dequantize_mxfp4_expert,
+        dequantize_mxfp4_projection,
+        load_gpt_oss_expert_mxfp4_shard,
+        run_gpt_oss_selected_expert_reference,
+    )
     from .auto_model import AutoModel
     from .utils import split_and_save_layers
     from .utils import NotEnoughSpaceException

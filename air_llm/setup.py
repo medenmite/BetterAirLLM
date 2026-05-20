@@ -21,7 +21,7 @@ setuptools.setup(
     version="2.11.0",
     author="Gavin Li",
     author_email="gavinli@animaai.cloud",
-    description="AirLLM allows single 4GB GPU card to run 70B large language models without quantization, distillation or pruning. 8GB vmem to run 405B Llama3.1.",
+    description="BetterAirLLM allows single 4GB GPU card to run 70B large language models without quantization, distillation or pruning. 8GB vmem to run 405B Llama3.1.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/lyogavin/airllm",

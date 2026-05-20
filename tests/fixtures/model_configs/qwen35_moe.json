@@ -1,0 +1,1 @@
+{"architectures": ["Qwen3_5MoeForCausalLM"], "model_type": "qwen3_5_moe", "text_config": {"model_type": "qwen3_5_moe_text"}}
