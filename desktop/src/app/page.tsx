@@ -9,7 +9,7 @@ const mockResponse = `Great question! Let me break this down.
 
 ## Layer-wise Inference
 
-AirLLM processes models one transformer layer at a time:
+BetterAirLLM processes models one transformer layer at a time:
 
 1. **Load Layer** — Memory-map the layer's weights from disk
 2. **Forward Pass** — Run the input through the layer on GPU
@@ -18,9 +18,9 @@ AirLLM processes models one transformer layer at a time:
 5. **Repeat** — Move to the next layer
 
 \`\`\`python
-from airllm import AirLLMEngine
+from betterairllm import BetterAirLLMEngine
 
-engine = AirLLMEngine("mistral-7b-v0.3.gguf")
+engine = BetterAirLLMEngine("mistral-7b-v0.3.gguf")
 response = engine.generate("Hello, world!", max_tokens=256)
 print(response)
 \`\`\`
@@ -30,7 +30,7 @@ print(response)
 | Method | VRAM Required | Speed |
 |--------|---------------|-------|
 | Full Load | 14 GB | ~40 tok/s |
-| AirLLM | 2 GB | ~8 tok/s |
+| BetterAirLLM | 2 GB | ~8 tok/s |
 | GGML Q4 | 4 GB | ~25 tok/s |
 
 > **Note:** Results vary depending on hardware and quantization level.
@@ -76,14 +76,14 @@ export default function HomePage() {
       {
         id: "hist-1",
         role: "user",
-        content: "Can you explain how layer-wise inference works in AirLLM?",
+        content: "Can you explain how layer-wise inference works in BetterAirLLM?",
       },
       {
         id: "hist-2",
         role: "assistant",
-        content: `## Layer-wise Inference in AirLLM
+        content: `## Layer-wise Inference in BetterAirLLM
 
-Layer-wise inference is the core innovation of AirLLM. Instead of loading the entire model into GPU memory, we process one transformer layer at a time:
+Layer-wise inference is the core innovation of BetterAirLLM. Instead of loading the entire model into GPU memory, we process one transformer layer at a time:
 
 1. **Load Layer** — Memory-map the layer's weights from disk
 2. **Forward Pass** — Run the input through the layer on GPU

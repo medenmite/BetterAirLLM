@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AirLLM Desktop – Local AI Manager",
+  title: "BetterAirLLM Desktop – Local AI Manager",
   description:
     "High-performance local AI inference manager. Run large language models on your hardware with layer-wise loading and zero cloud dependency.",
 };

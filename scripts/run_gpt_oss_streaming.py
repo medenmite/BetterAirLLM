@@ -25,7 +25,7 @@ if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
 import torch  # noqa: E402
-from airllm import AutoModel  # noqa: E402
+from betterairllm import AutoModel  # noqa: E402
 from smoke_gpt_oss_20b_one_token import (  # noqa: E402
     _dtype_from_name,
     _is_gpt_oss_config,

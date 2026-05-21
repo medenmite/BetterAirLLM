@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from accelerate.utils.modeling import set_module_tensor_to_device
 
-from .airllm_base import BetterAirLLMBaseModel
+from .betterairllm_base import BetterAirLLMBaseModel
 from .gpt_oss_mxfp4 import dequantize_mxfp4_expert
 from .selective_fused_moe import GptOssSelectiveFusedMoEAdapter, Qwen35SelectiveFusedMoEAdapter
 from .utils import clean_memory
@@ -167,10 +167,10 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
         def selective_forward(module_self, hidden_states, router_indices=None, routing_weights=None):
             if router_indices is None or routing_weights is None:
                 raise ValueError("GPT-OSS selective fused expert adapter requires router_indices and routing_weights.")
-            return module_self._airllm_gpt_oss_adapter.forward(hidden_states, router_indices, routing_weights)
+            return module_self._betterairllm_gpt_oss_adapter.forward(hidden_states, router_indices, routing_weights)
 
-        module._airllm_original_forward = original_forward
-        module._airllm_gpt_oss_adapter = adapter
+        module._betterairllm_original_forward = original_forward
+        module._betterairllm_gpt_oss_adapter = adapter
         module.forward = types.MethodType(selective_forward, module)
         self._expert_modules[shard_prefix] = module
         return True
@@ -203,16 +203,16 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
         original_forward = module.forward
 
         def selective_forward(module_self, hidden_states, top_k_index, top_k_weights):
-            return module_self._airllm_qwen35_adapter.forward(hidden_states, top_k_index, top_k_weights)
+            return module_self._betterairllm_qwen35_adapter.forward(hidden_states, top_k_index, top_k_weights)
 
-        module._airllm_original_forward = original_forward
-        module._airllm_qwen35_adapter = adapter
+        module._betterairllm_original_forward = original_forward
+        module._betterairllm_qwen35_adapter = adapter
         module.forward = types.MethodType(selective_forward, module)
         self._expert_modules[shard_prefix] = module
         return True
 
     def _maybe_patch_timed_module(self, layer_name, module_name, module):
-        if getattr(module, "_airllm_timing_patched", False):
+        if getattr(module, "_betterairllm_timing_patched", False):
             return
         stat_key = None
         if module_name == "self_attn" or module_name.endswith(".self_attn"):
@@ -230,7 +230,7 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
         def timed_forward(module_self, *args, **kwargs):
             owner._sync_timing_device()
             started = time.perf_counter()
-            result = module_self._airllm_timing_original_forward(*args, **kwargs)
+            result = module_self._betterairllm_timing_original_forward(*args, **kwargs)
             owner._sync_timing_device()
             elapsed = time.perf_counter() - started
             layer_stats = owner._timed_module_stats.setdefault(layer_name, {})
@@ -244,8 +244,8 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
                 layer_stats[f"{stat_key}_output_device"] = output_device
             return result
 
-        module._airllm_timing_patched = True
-        module._airllm_timing_original_forward = original_forward
+        module._betterairllm_timing_patched = True
+        module._betterairllm_timing_original_forward = original_forward
         module.forward = types.MethodType(timed_forward, module)
 
     def _sync_timing_device(self):
@@ -307,30 +307,30 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
         return []
 
     def _patch_expert_forward(self, expert, shard_name):
-        if getattr(expert, "_airllm_lazy_expert_patched", False):
-            expert._airllm_expert_shard_name = shard_name
-            expert._airllm_owner = self
+        if getattr(expert, "_betterairllm_lazy_expert_patched", False):
+            expert._betterairllm_expert_shard_name = shard_name
+            expert._betterairllm_owner = self
             return
 
         original_forward = expert.forward
         owner = self
 
         def lazy_forward(expert_self, *args, **kwargs):
-            current_owner = expert_self._airllm_owner
+            current_owner = expert_self._betterairllm_owner
             if current_owner._expert_needs_loading(expert_self):
                 current_owner._expert_cache_misses += 1
-                state_dict = current_owner._load_expert_state_dict(expert_self._airllm_expert_shard_name)
+                state_dict = current_owner._load_expert_state_dict(expert_self._betterairllm_expert_shard_name)
                 current_owner.move_layer_to_device(state_dict)
-                current_owner._remember_resident_expert(expert_self._airllm_expert_shard_name, expert_self)
+                current_owner._remember_resident_expert(expert_self._betterairllm_expert_shard_name, expert_self)
             else:
                 current_owner._expert_cache_hits += 1
-                current_owner._touch_resident_expert(expert_self._airllm_expert_shard_name)
-            return expert_self._airllm_original_forward(*args, **kwargs)
+                current_owner._touch_resident_expert(expert_self._betterairllm_expert_shard_name)
+            return expert_self._betterairllm_original_forward(*args, **kwargs)
 
-        expert._airllm_lazy_expert_patched = True
-        expert._airllm_owner = owner
-        expert._airllm_expert_shard_name = shard_name
-        expert._airllm_original_forward = original_forward
+        expert._betterairllm_lazy_expert_patched = True
+        expert._betterairllm_owner = owner
+        expert._betterairllm_expert_shard_name = shard_name
+        expert._betterairllm_original_forward = original_forward
         expert.forward = types.MethodType(lazy_forward, expert)
 
     @staticmethod
@@ -943,7 +943,7 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
     def _fused_adapter_stats(self):
         totals = {}
         for module in self._expert_modules.values():
-            adapter = getattr(module, "_airllm_gpt_oss_adapter", None) or getattr(module, "_airllm_qwen35_adapter", None)
+            adapter = getattr(module, "_betterairllm_gpt_oss_adapter", None) or getattr(module, "_betterairllm_qwen35_adapter", None)
             if adapter is None:
                 continue
             for key, value in adapter.stats.items():
@@ -987,7 +987,7 @@ class BetterAirLLMMoE(BetterAirLLMBaseModel):
         if self._lazy_split_builder is not None and hasattr(self._lazy_split_builder, "reset_run_metrics"):
             self._lazy_split_builder.reset_run_metrics()
         for module in self._expert_modules.values():
-            adapter = getattr(module, "_airllm_gpt_oss_adapter", None) or getattr(module, "_airllm_qwen35_adapter", None)
+            adapter = getattr(module, "_betterairllm_gpt_oss_adapter", None) or getattr(module, "_betterairllm_qwen35_adapter", None)
             if adapter is not None:
                 adapter.reset_stats()
 

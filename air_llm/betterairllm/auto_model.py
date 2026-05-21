@@ -8,7 +8,7 @@ if platform == "darwin":
     is_on_mac_os = True
 
 if is_on_mac_os:
-    from airllm import BetterAirLLMLlamaMlx
+    from betterairllm import BetterAirLLMLlamaMlx
 
 
 def _architecture_name(config):
@@ -75,24 +75,24 @@ class AutoModel:
         architecture = _architecture_name(config)
 
         if _is_moe_config(config):
-            return "airllm", "BetterAirLLMMoE"
+            return "betterairllm", "BetterAirLLMMoE"
         if "Qwen2ForCausalLM" in architecture:
-            return "airllm", "BetterAirLLMQWen2"
+            return "betterairllm", "BetterAirLLMQWen2"
         elif "QWen" in architecture:
-            return "airllm", "BetterAirLLMQWen"
+            return "betterairllm", "BetterAirLLMQWen"
         elif "Baichuan" in architecture:
-            return "airllm", "BetterAirLLMBaichuan"
+            return "betterairllm", "BetterAirLLMBaichuan"
         elif "ChatGLM" in architecture:
-            return "airllm", "BetterAirLLMChatGLM"
+            return "betterairllm", "BetterAirLLMChatGLM"
         elif "InternLM" in architecture:
-            return "airllm", "BetterAirLLMInternLM"
+            return "betterairllm", "BetterAirLLMInternLM"
         elif "Mistral" in architecture:
-            return "airllm", "BetterAirLLMMistral"
+            return "betterairllm", "BetterAirLLMMistral"
         elif "Llama" in architecture:
-            return "airllm", "BetterAirLLMLlama2"
+            return "betterairllm", "BetterAirLLMLlama2"
         else:
             print(f"unknown architecture: {architecture}, try to use Llama2...")
-            return "airllm", "BetterAirLLMLlama2"
+            return "betterairllm", "BetterAirLLMLlama2"
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, *inputs, **kwargs):

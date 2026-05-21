@@ -21,13 +21,13 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-from airllm import BetterAirLLMBaseModel, AutoModel  # noqa: E402
-from airllm.gpt_oss_mxfp4 import (  # noqa: E402
+from betterairllm import BetterAirLLMBaseModel, AutoModel  # noqa: E402
+from betterairllm.gpt_oss_mxfp4 import (  # noqa: E402
     FP4_VALUES,
     pack_dense_to_mxfp4_exact,
 )
-from airllm.moe_layout_probe import download_gpt_oss_one_expert_mxfp4_smoke, dry_run_gb_per_token_report  # noqa: E402
-from airllm.selective_fused_moe import (  # noqa: E402
+from betterairllm.moe_layout_probe import download_gpt_oss_one_expert_mxfp4_smoke, dry_run_gb_per_token_report  # noqa: E402
+from betterairllm.selective_fused_moe import (  # noqa: E402
     FakeFusedMoEAdapter,
     GptOssSelectiveFusedMoEAdapter,
     build_fake_fused_expert_shards,

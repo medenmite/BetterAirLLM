@@ -10,7 +10,7 @@
 [**Ollama**](#using-ollama-models-through-betterairllm) |
 [**FAQ**](#faq)
 
-**BetterAirLLM** is a local large-model inference stack built on AirLLM-style layer streaming. This repo now includes an OpenAI-compatible FastAPI server, a model registry, Ollama GGUF proxy support, experimental MoE selective expert paths, GPT-OSS/Qwen smoke and benchmark tools, and a Next.js desktop chat shell.
+**BetterAirLLM** is a local large-model inference stack built on BetterAirLLM-style layer streaming. This repo now includes an OpenAI-compatible FastAPI server, a model registry, Ollama GGUF proxy support, experimental MoE selective expert paths, GPT-OSS/Qwen smoke and benchmark tools, and a Next.js desktop chat shell.
 
 The core memory goal is unchanged: keep only the active pieces of a model resident while streaming weights from disk, so larger Hugging Face checkpoints can run on smaller GPUs than full-model loading would normally allow. The new server path exposes that runtime through `/v1/models`, `/v1/chat/completions`, `/v1/capabilities`, `/v1/runtime`, and per-model preflight checks.
 
@@ -205,15 +205,15 @@ python scripts/benchmark_gb_per_token.py openai/gpt-oss-20b --runtime auto --max
 
 GPT-OSS models should be used with OpenAI's harmony chat format for quality evaluation. Raw text prompts in `benchmark_gb_per_token.py` are low-level runtime benchmarks only, not model quality benchmarks.
 
-<a href="https://github.com/lyogavin/airllm/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/lyogavin/airllm?style=social)</a>
-[![Downloads](https://static.pepy.tech/personalized-badge/airllm?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/airllm)
+<a href="https://github.com/lyogavin/betterairllm/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/lyogavin/betterairllm?style=social)</a>
+[![Downloads](https://static.pepy.tech/personalized-badge/betterairllm?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/betterairllm)
 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/LianjiaTech/BELLE/blob/main/LICENSE)
 [![Generic badge](https://img.shields.io/badge/wechat-Anima-brightgreen?logo=wechat)](https://static.aicompose.cn/static/wecom_barcode.png?t=1671918938)
 [![Discord](https://img.shields.io/discord/1175437549783760896?logo=discord&color=7289da
 )](https://discord.gg/2xffU5sn)
-[![PyPI - BetterAirLLM](https://img.shields.io/pypi/format/airllm?logo=pypi&color=3571a3)
-](https://pypi.org/project/airllm/)
+[![PyPI - BetterAirLLM](https://img.shields.io/pypi/format/betterairllm?logo=pypi&color=3571a3)
+](https://pypi.org/project/betterairllm/)
 [![Website](https://img.shields.io/website?up_message=blog&url=https%3A%2F%2Fmedium.com%2F%40lyo.gavin&logo=medium&color=black)](https://medium.com/@lyo.gavin)
 [![Website](https://img.shields.io/badge/Gavin_Li-Blog-blue)](https://gavinliblog.com)
 [![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dgavinli%26type%3Dpatrons&style=flat)](https://patreon.com/gavinli)
@@ -230,7 +230,7 @@ GPT-OSS models should be used with OpenAI's harmony chat format for quality eval
 
 [2024/08/18] v2.10.1 Support CPU inference. Support non sharded models. Thanks @NavodPeiris for the great work! 
 
-[2024/07/30] Support Llama3.1 **405B** ([example notebook](https://colab.research.google.com/github/lyogavin/airllm/blob/main/air_llm/examples/run_llama3.1_405B.ipynb)). Support **8bit/4bit quantization**.
+[2024/07/30] Support Llama3.1 **405B** ([example notebook](https://colab.research.google.com/github/lyogavin/betterairllm/blob/main/air_llm/examples/run_llama3.1_405B.ipynb)). Support **8bit/4bit quantization**.
 
 [2024/04/20] BetterAirLLM supports Llama3 natively already. Run Llama3 70B on 4GB single GPU.
 
@@ -246,24 +246,24 @@ GPT-OSS models should be used with OpenAI's harmony chat format for quality eval
 
 [2023/12/02] added support for safetensors. Now support all top 10 models in open llm leaderboard.
 
-[2023/12/01] airllm 2.0. Support compressions: **3x run time speed up!**
+[2023/12/01] betterairllm 2.0. Support compressions: **3x run time speed up!**
 
-[2023/11/20] airllm Initial version!
+[2023/11/20] betterairllm Initial version!
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lyogavin/airllm&type=Timeline)](https://star-history.com/#lyogavin/airllm&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=lyogavin/betterairllm&type=Timeline)](https://star-history.com/#lyogavin/betterairllm&Timeline)
 
 ## Python API Quickstart
 
-The lower-level AirLLM-style Python API is still available when you want to bypass the OpenAI-compatible server and call the local runtime directly.
+The lower-level BetterAirLLM-style Python API is still available when you want to bypass the OpenAI-compatible server and call the local runtime directly.
 
 ### 1. Install package
 
-First, install the airllm pip package.
+First, install the betterairllm pip package.
 
 ```bash
-pip install airllm
+pip install betterairllm
 ```
 
 ### 2. Inference
@@ -273,7 +273,7 @@ Then, initialize BetterAirLLMLlama2, pass in the huggingface repo ID of the mode
 (*You can also specify the path to save the splitted layered model through **layer_shards_saving_path** when init BetterAirLLMLlama2.*
 
 ```python
-from airllm import AutoModel
+from betterairllm import AutoModel
 
 MAX_LENGTH = 128
 # could use hugging face model repo id:
@@ -314,12 +314,12 @@ Note: During inference, the original model will first be decomposed and saved la
 
 We just added model compression based on block-wise quantization-based model compression. Which can further **speed up the inference speed** for up to **3x** , with **almost ignorable accuracy loss!** (see more performance evaluation and why we use block-wise quantization in [this paper](https://arxiv.org/abs/2212.09720))
 
-![speed_improvement](https://github.com/lyogavin/airllm/blob/main/assets/airllm2_time_improvement.png?v=2&raw=true)
+![speed_improvement](https://github.com/lyogavin/betterairllm/blob/main/assets/betterairllm2_time_improvement.png?v=2&raw=true)
 
 #### How to enable model compression speed up:
 
 * Step 1. make sure you have [bitsandbytes](https://github.com/TimDettmers/bitsandbytes) installed by `pip install -U bitsandbytes `
-* Step 2. make sure airllm verion later than 2.0.0: `pip install -U airllm` 
+* Step 2. make sure betterairllm verion later than 2.0.0: `pip install -U betterairllm` 
 * Step 3. when initialize the model, passing the argument compression ('4bit' or '8bit'):
 
 ```python
@@ -449,20 +449,20 @@ Troubleshooting:
 
 ## MacOS
 
-Just install airllm and run the code the same as on linux. See more in [Quick Start](#quickstart).
+Just install betterairllm and run the code the same as on linux. See more in [Quick Start](#quickstart).
 
 * make sure you installed [mlx](https://github.com/ml-explore/mlx?tab=readme-ov-file#installation) and torch
 * you probably need to install python native see more [here](https://stackoverflow.com/a/65432861/21230266)
 * only [Apple silicon](https://support.apple.com/en-us/HT211814) is supported
 
-Example [python notebook] (https://github.com/lyogavin/airllm/blob/main/air_llm/examples/run_on_macos.ipynb)
+Example [python notebook] (https://github.com/lyogavin/betterairllm/blob/main/air_llm/examples/run_on_macos.ipynb)
 
 
 ## Example Python Notebook
 
 Example colabs here:
 
-<a target="_blank" href="https://colab.research.google.com/github/lyogavin/airllm/blob/main/air_llm/examples/run_all_types_of_models.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/lyogavin/betterairllm/blob/main/air_llm/examples/run_all_types_of_models.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -474,7 +474,7 @@ Example colabs here:
 * ChatGLM:
 
 ```python
-from airllm import AutoModel
+from betterairllm import AutoModel
 MAX_LENGTH = 128
 model = AutoModel.from_pretrained("THUDM/chatglm3-6b-base")
 input_text = ['What is the capital of China?',]
@@ -495,7 +495,7 @@ model.tokenizer.decode(generation_output.sequences[0])
 * QWen:
 
 ```python
-from airllm import AutoModel
+from betterairllm import AutoModel
 MAX_LENGTH = 128
 model = AutoModel.from_pretrained("Qwen/Qwen-7B")
 input_text = ['What is the capital of China?',]
@@ -516,7 +516,7 @@ model.tokenizer.decode(generation_output.sequences[0])
 * Baichuan, InternLM, Mistral, etc:
 
 ```python
-from airllm import AutoModel
+from betterairllm import AutoModel
 MAX_LENGTH = 128
 model = AutoModel.from_pretrained("baichuan-inc/Baichuan2-7B-Base")
 #model = AutoModel.from_pretrained("internlm/internlm-20b")
@@ -567,14 +567,14 @@ Most likely you are loading QWen or ChatGLM model with Llama2 class. Try the fol
 For QWen model: 
 
 ```python
-from airllm import AutoModel #<----- instead of BetterAirLLMLlama2
+from betterairllm import AutoModel #<----- instead of BetterAirLLMLlama2
 AutoModel.from_pretrained(...)
 ```
 
 For ChatGLM model: 
 
 ```python
-from airllm import AutoModel #<----- instead of BetterAirLLMLlama2
+from betterairllm import AutoModel #<----- instead of BetterAirLLMLlama2
 AutoModel.from_pretrained(...)
 ```
 
@@ -607,10 +607,10 @@ BetterAirLLM useful in your research and wish to cite it, please use the followi
 BibTex entry:
 
 ```
-@software{airllm2023,
+@software{betterairllm2023,
   author = {Gavin Li},
   title = {BetterAirLLM: scaling large language models on low-end commodity computers},
-  url = {https://github.com/lyogavin/airllm/},
+  url = {https://github.com/lyogavin/betterairllm/},
   version = {0.0},
   year = {2023},
 }

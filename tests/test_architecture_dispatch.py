@@ -13,8 +13,8 @@ if importlib.util.find_spec("transformers") is None:
     transformers_stub.AutoConfig = SimpleNamespace(from_pretrained=lambda *args, **kwargs: None)
     sys.modules.setdefault("transformers", transformers_stub)
 SPEC = importlib.util.spec_from_file_location(
-    "airllm_auto_model_for_tests",
-    ROOT / "air_llm" / "airllm" / "auto_model.py",
+    "betterairllm_auto_model_for_tests",
+    ROOT / "air_llm" / "betterairllm" / "auto_model.py",
 )
 auto_model_module = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
@@ -64,7 +64,7 @@ class ArchitectureDispatchTests(unittest.TestCase):
         for fixture_name, expected_class in cases.items():
             with self.subTest(fixture=fixture_name):
                 module_name, class_name = auto_model_module.AutoModel.get_module_class(fixture_name)
-                self.assertEqual(module_name, "airllm")
+                self.assertEqual(module_name, "betterairllm")
                 self.assertEqual(class_name, expected_class)
 
     def test_selects_gpt_oss_mxfp4_adapter_from_config(self):

@@ -31,7 +31,7 @@
     "tested_level": "architecture_dispatch",
     "quantization": null,
     "memory": {
-      "mode": "airllm_layer_streaming",
+      "mode": "betterairllm_layer_streaming",
       "active_parameters": "3B"
     },
     "context_length": 2048,
@@ -51,7 +51,7 @@
     "tested_level": "architecture_dispatch",
     "quantization": null,
     "memory": {
-      "mode": "airllm_layer_streaming"
+      "mode": "betterairllm_layer_streaming"
     },
     "context_length": 2048,
     "known_limitations": [],
@@ -68,7 +68,7 @@
     "tested_level": "architecture_dispatch",
     "quantization": null,
     "memory": {
-      "mode": "airllm_layer_streaming"
+      "mode": "betterairllm_layer_streaming"
     },
     "context_length": 2048,
     "known_limitations": [

@@ -34,11 +34,11 @@ class OllamaIntegrationTests(unittest.TestCase):
             server.loaded_model_id = None
             server.last_generation_stats.clear()
 
-    def test_model_entry_defaults_preserve_airllm_backend(self):
+    def test_model_entry_defaults_preserve_betterairllm_backend(self):
         entry = ModelEntry(id="mistral", repo_id="mistralai/Mistral-7B-Instruct-v0.1")
 
         self.assertEqual(entry.source, "hf")
-        self.assertEqual(entry.backend, "airllm")
+        self.assertEqual(entry.backend, "betterairllm")
         self.assertIsNone(entry.format)
         self.assertIsNone(entry.ollama_model)
 
@@ -91,7 +91,7 @@ class OllamaIntegrationTests(unittest.TestCase):
         self.assertEqual(config.models[0].family, "qwen3_5_moe")
         self.assertEqual(config.models[0].metadata["family"], "qwen3_5_moe")
 
-    def test_airllm_model_prepends_custom_model(self):
+    def test_betterairllm_model_prepends_custom_model(self):
         old_model = os.environ.get("AIRLLM_MODEL")
         old_model_id = os.environ.get("AIRLLM_MODEL_ID")
         old_models = os.environ.get("AIRLLM_MODELS")
@@ -352,7 +352,7 @@ class OllamaIntegrationTests(unittest.TestCase):
 
         backend_ids = {item["id"] for item in result["backends"]}
         family_ids = {item["id"] for item in result["hf_architecture_families"]}
-        self.assertIn("airllm", backend_ids)
+        self.assertIn("betterairllm", backend_ids)
         self.assertIn("ollama", backend_ids)
         self.assertIn("qwen2_qwen2_5", family_ids)
         self.assertIn("runtime", result)
@@ -361,7 +361,7 @@ class OllamaIntegrationTests(unittest.TestCase):
         self.assertTrue(any("GGUF" in item for item in result["known_limitations"]))
 
     @unittest.skipIf(server is None, f"server dependencies unavailable: {SERVER_IMPORT_ERROR}")
-    def test_preflight_for_airllm_model_reports_registry_and_warnings(self):
+    def test_preflight_for_betterairllm_model_reports_registry_and_warnings(self):
         server.config = ServerConfig(
             device="cpu",
             models=[ModelEntry(id="llama", repo_id="meta-llama/Llama-2-7b-chat-hf")],
@@ -371,16 +371,16 @@ class OllamaIntegrationTests(unittest.TestCase):
         result = asyncio.run(server.model_preflight("llama"))
 
         self.assertEqual(result["model_id"], "llama")
-        self.assertEqual(result["backend"], "airllm")
+        self.assertEqual(result["backend"], "betterairllm")
         self.assertEqual(result["registry_entry"]["repo_id"], "meta-llama/Llama-2-7b-chat-hf")
         self.assertIn("support", result)
         self.assertIn("paths", result)
         self.assertIn("may require HF_TOKEN", " ".join(result["warnings"]))
 
     @unittest.skipIf(server is None, f"server dependencies unavailable: {SERVER_IMPORT_ERROR}")
-    def test_preflight_for_airllm_gguf_blocks(self):
+    def test_preflight_for_betterairllm_gguf_blocks(self):
         server.config = ServerConfig(
-            models=[ModelEntry(id="bad-gguf", repo_id="C:/models/model.gguf", backend="airllm", format="gguf")],
+            models=[ModelEntry(id="bad-gguf", repo_id="C:/models/model.gguf", backend="betterairllm", format="gguf")],
             discover_ollama=False,
         )
 
@@ -472,13 +472,13 @@ class OllamaIntegrationTests(unittest.TestCase):
         self.assertEqual(result["choices"][0]["message"]["content"], "proxied")
 
     @unittest.skipIf(server is None, f"server dependencies unavailable: {SERVER_IMPORT_ERROR}")
-    def test_airllm_backend_rejects_gguf_config(self):
+    def test_betterairllm_backend_rejects_gguf_config(self):
         server.config = ServerConfig(
             models=[
                 ModelEntry(
                     id="bad-gguf",
                     repo_id="C:/models/model.gguf",
-                    backend="airllm",
+                    backend="betterairllm",
                     format="gguf",
                 )
             ]

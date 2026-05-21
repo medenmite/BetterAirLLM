@@ -25,9 +25,9 @@ if str(AIR_LLM_ROOT) not in sys.path:
 
 import torch  # noqa: E402
 
-from airllm import AutoModel  # noqa: E402
-from airllm.airllm_base import BetterAirLLMBaseModel  # noqa: E402
-from airllm.moe_layout_probe import (  # noqa: E402
+from betterairllm import AutoModel  # noqa: E402
+from betterairllm.betterairllm_base import BetterAirLLMBaseModel  # noqa: E402
+from betterairllm.moe_layout_probe import (  # noqa: E402
     download_gpt_oss_one_expert_mxfp4_smoke,
     dry_run_gb_per_token_report,
     load_config,

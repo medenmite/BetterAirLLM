@@ -37,9 +37,9 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from transformers import AutoConfig, TextIteratorStreamer
 
-# ── Ensure the local airllm package is importable ─────────────
+# ── Ensure the local betterairllm package is importable ─────────────
 sys.path.insert(0, "air_llm")
-from airllm import AutoModel  # noqa: E402
+from betterairllm import AutoModel  # noqa: E402
 
 from server_config import ServerConfig, ModelEntry, load_config  # noqa: E402
 from ollama_registry import (  # noqa: E402
@@ -65,7 +65,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
-log = logging.getLogger("airllm-server")
+log = logging.getLogger("betterairllm-server")
 
 # ── Global State ──────────────────────────────────────────────
 config: ServerConfig = None  # type: ignore
@@ -87,7 +87,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str = "airllm"
+    model: str = "betterairllm"
     messages: list[ChatMessage]
     max_tokens: int = Field(default=256, alias="max_tokens")
     temperature: float = 0.7
@@ -444,7 +444,7 @@ def _model_support_payload(entry: ModelEntry) -> dict[str, Any]:
     metadata = dict(entry.metadata or {})
     family = entry.family or metadata.get("family") or _infer_model_family(entry)
     status = entry.status or metadata.get("status") or ("experimental" if family in {"moe", "qwen_moe", "qwen3_5_moe", "gpt_oss"} else "supported")
-    tested_level = entry.tested_level or metadata.get("tested_level") or ("architecture_dispatch" if entry.backend == "airllm" else "backend_proxy")
+    tested_level = entry.tested_level or metadata.get("tested_level") or ("architecture_dispatch" if entry.backend == "betterairllm" else "backend_proxy")
     return {
         "family": family,
         "prompt_format": entry.prompt_format or metadata.get("prompt_format") or "tokenizer_chat_template",
@@ -479,7 +479,7 @@ def _infer_model_family(entry: ModelEntry) -> str:
 def build_capabilities() -> dict[str, Any]:
     """Return static and configured runtime capabilities."""
 
-    configured_airllm = [m.id for m in config.models if m.backend == "airllm"]
+    configured_betterairllm = [m.id for m in config.models if m.backend == "betterairllm"]
     configured_ollama = [m.id for m in config.models if m.backend == "ollama"]
     triton_status = _hf_triton_status()
     return {
@@ -497,7 +497,7 @@ def build_capabilities() -> dict[str, Any]:
         },
         "backends": [
             {
-                "id": "airllm",
+                "id": "betterairllm",
                 "description": "Hugging Face or local safetensors checkpoints through BetterAirLLM layer-wise loading.",
                 "formats": ["safetensors", "pytorch_bin", "unknown"],
             },
@@ -508,9 +508,9 @@ def build_capabilities() -> dict[str, Any]:
             },
         ],
         "configured_model_count": len(config.models),
-        "configured_airllm_model_count": len(configured_airllm),
+        "configured_betterairllm_model_count": len(configured_betterairllm),
         "configured_ollama_model_count": len(configured_ollama),
-        "configured_airllm_models": configured_airllm,
+        "configured_betterairllm_models": configured_betterairllm,
         "configured_ollama_models": configured_ollama,
         "ollama": {
             "discovery_enabled": config.discover_ollama,
@@ -1145,10 +1145,10 @@ async def lifespan(app: FastAPI):
 
 
 async def _log_startup_model_inventory() -> None:
-    configured_airllm = [m.id for m in config.models if m.backend == "airllm"]
+    configured_betterairllm = [m.id for m in config.models if m.backend == "betterairllm"]
     configured_ollama = [m.id for m in config.models if m.backend == "ollama"]
 
-    log.info("Configured BetterAirLLM models (%d): %s", len(configured_airllm), configured_airllm)
+    log.info("Configured BetterAirLLM models (%d): %s", len(configured_betterairllm), configured_betterairllm)
     if configured_ollama:
         log.info("Configured Ollama models (%d): %s", len(configured_ollama), configured_ollama)
 
@@ -1246,7 +1246,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "service": "airllm-server"}
+    return {"status": "ok", "service": "betterairllm-server"}
 
 
 @app.get("/health")
@@ -1632,7 +1632,7 @@ def _sse_final_chunk(request_id: str, created: int, model_id: str) -> str:
 
 if __name__ == "__main__":
     _config = load_config()
-    _airllm_count = len([m for m in _config.models if m.backend == "airllm"])
+    _betterairllm_count = len([m for m in _config.models if m.backend == "betterairllm"])
     _configured_ollama_count = len([m for m in _config.models if m.backend == "ollama"])
     print(f"""
 =================================================
@@ -1640,7 +1640,7 @@ if __name__ == "__main__":
   OpenAI-compatible API for layer-wise inference
 =================================================
   Endpoint:  http://localhost:{_config.port}/v1
-  BetterAirLLM config models:     {_airllm_count}
+  BetterAirLLM config models:     {_betterairllm_count}
   Ollama config models:     {_configured_ollama_count}
   Ollama discovery:         {"enabled" if _config.discover_ollama else "disabled"}
   Full model inventory:     shown in startup logs below
@@ -1650,7 +1650,7 @@ if __name__ == "__main__":
 Connect Open WebUI:
   Settings > Connections > Add OpenAI connection
   URL: http://localhost:{_config.port}/v1
-  Key: sk-airllm (any value works)
+  Key: sk-betterairllm (any value works)
 """)
     uvicorn.run(
         "server:app",

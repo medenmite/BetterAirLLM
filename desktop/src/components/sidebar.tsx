@@ -34,7 +34,7 @@ interface FolderGroup {
 
 // ─────────────────────────── Mock Data ─────────────────────────
 const pinnedChats: ChatItem[] = [
-  { id: "pin1", title: "AirLLM Architecture Overview" },
+  { id: "pin1", title: "BetterAirLLM Architecture Overview" },
   { id: "pin2", title: "Memory-mapped Tensor Loading" },
 ];
 
@@ -370,7 +370,7 @@ export default function Sidebar({
             onClick={onNewChat}
           >
             <div className="self-center font-medium text-white font-primary">
-              AirLLM
+              BetterAirLLM
             </div>
           </button>
 

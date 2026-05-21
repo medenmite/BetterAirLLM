@@ -8,14 +8,14 @@ AIR_LLM_ROOT = Path(__file__).resolve().parents[1]
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-from airllm.gpt_oss_mxfp4 import (
+from betterairllm.gpt_oss_mxfp4 import (
     FP4_VALUES,
     dequantize_mxfp4_projection,
     mxfp4_state_nbytes,
     pack_dense_to_mxfp4_exact,
     run_gpt_oss_selected_expert_reference,
 )
-from airllm.selective_fused_moe import GptOssSelectiveFusedMoEAdapter
+from betterairllm.selective_fused_moe import GptOssSelectiveFusedMoEAdapter
 
 
 class FixedTop4Router:

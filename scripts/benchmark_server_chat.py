@@ -18,7 +18,7 @@ def _post_json(url: str, payload: dict, timeout: float):
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": "Bearer sk-airllm"},
+        headers={"Content-Type": "application/json", "Authorization": "Bearer sk-betterairllm"},
         method="POST",
     )
     return urllib.request.urlopen(request, timeout=timeout)

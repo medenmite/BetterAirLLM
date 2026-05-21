@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import torch
 
-from ..airllm.auto_model import AutoModel
-from ..airllm.utils import split_moe_layer_state_dict
+from ..betterairllm.auto_model import AutoModel
+from ..betterairllm.utils import split_moe_layer_state_dict
 
 
 class TestMoEUtilities(unittest.TestCase):
@@ -43,10 +43,10 @@ class TestMoEUtilities(unittest.TestCase):
             num_experts=64,
         )
 
-        with patch("air_llm.airllm.auto_model.AutoConfig.from_pretrained", return_value=config):
+        with patch("air_llm.betterairllm.auto_model.AutoConfig.from_pretrained", return_value=config):
             module, cls = AutoModel.get_module_class("local-moe-model")
 
-        self.assertEqual(module, "airllm")
+        self.assertEqual(module, "betterairllm")
         self.assertEqual(cls, "BetterAirLLMMoE")
 
     def test_split_moe_layer_state_dict_splits_fused_expert_tensors(self):

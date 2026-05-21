@@ -15,8 +15,8 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-from airllm.moe_layout_probe import load_config  # noqa: E402
-from airllm.moe_split_builder import IncrementalMoESplitBuilder  # noqa: E402
+from betterairllm.moe_layout_probe import load_config  # noqa: E402
+from betterairllm.moe_split_builder import IncrementalMoESplitBuilder  # noqa: E402
 from huggingface_hub import hf_hub_download  # noqa: E402
 
 

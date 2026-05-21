@@ -20,9 +20,9 @@ class ModelEntry:
     description: str = ""
     compression: Optional[str] = None
     max_seq_len: int = 2048
-    owned_by: str = "airllm"
+    owned_by: str = "betterairllm"
     source: str = "hf"
-    backend: str = "airllm"
+    backend: str = "betterairllm"
     format: Optional[str] = None
     ollama_model: Optional[str] = None
     family: Optional[str] = None

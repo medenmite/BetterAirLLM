@@ -1,6 +1,6 @@
 
 
-from .airllm_base import BetterAirLLMBaseModel
+from .betterairllm_base import BetterAirLLMBaseModel
 
 
 

@@ -1,4 +1,4 @@
-from airllm import BetterAirLLMLlama2
+from betterairllm import BetterAirLLMLlama2
 
 MAX_LENGTH = 128
 # could use hugging face model repo id:

@@ -3,14 +3,14 @@ import unittest
 import torch
 import torch.nn.functional as F
 
-from ..airllm.selective_fused_moe import (
+from ..betterairllm.selective_fused_moe import (
     GptOssSelectiveFusedMoEAdapter,
     build_fake_gpt_oss_expert_shards,
     fake_gpt_oss_full_expert_bytes,
     fake_gpt_oss_full_fused_moe_forward,
 )
-from ..airllm.airllm_moe import BetterAirLLMMoE
-from ..airllm.utils import split_moe_layer_state_dict
+from ..betterairllm.betterairllm_moe import BetterAirLLMMoE
+from ..betterairllm.utils import split_moe_layer_state_dict
 
 
 class TinyGptOssRouter(torch.nn.Module):
@@ -178,7 +178,7 @@ class TestGptOssSelectiveFusedMoE(unittest.TestCase):
         self.assertEqual(adapter.stats["expert_load_calls"], first_loads * 2)
         self.assertEqual(adapter.stats["expert_cache_hits"], 0)
 
-    def test_airllm_cpu_expert_cache_hit_path(self):
+    def test_betterairllm_cpu_expert_cache_hit_path(self):
         model = BetterAirLLMMoE.__new__(BetterAirLLMMoE)
         model._cpu_expert_cache = {}
         model._cpu_expert_bytes = 0

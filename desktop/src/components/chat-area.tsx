@@ -41,7 +41,7 @@ function MessageBubble({ message }: { message: Message }) {
         {/* Model name label for assistant */}
         {!isUser && (
           <div className="text-sm font-medium text-[var(--color-gray-200)] mb-1 font-primary">
-            AirLLM
+            BetterAirLLM
           </div>
         )}
 
@@ -73,7 +73,7 @@ function TypingIndicator() {
       </div>
       <div>
         <div className="text-sm font-medium text-[var(--color-gray-200)] mb-1 font-primary">
-          AirLLM
+          BetterAirLLM
         </div>
         <div className="flex items-center gap-1.5 pt-1">
           <span className="typing-dot" />
@@ -152,7 +152,7 @@ function HomeState({ onSendMessage }: { onSendMessage: (msg: string) => void }) 
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.05 }}
             >
-              AirLLM
+              BetterAirLLM
             </motion.div>
           </div>
 
@@ -249,7 +249,7 @@ export default function ChatArea({
               <PromptBox onSendMessage={onSendMessage} />
               <div className="text-center mt-2">
                 <span className="text-[var(--color-gray-600)] text-xs font-primary">
-                  AirLLM Desktop · Running locally
+                  BetterAirLLM Desktop · Running locally
                 </span>
               </div>
             </div>

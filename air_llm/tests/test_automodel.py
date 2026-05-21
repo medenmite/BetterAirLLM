@@ -1,9 +1,9 @@
 import sys
 import unittest
 
-#sys.path.insert(0, '../airllm')
+#sys.path.insert(0, '../betterairllm')
 
-from ..airllm.auto_model import AutoModel
+from ..betterairllm.auto_model import AutoModel
 
 
 class TestAutoModel(unittest.TestCase):

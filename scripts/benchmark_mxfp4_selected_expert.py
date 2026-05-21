@@ -24,14 +24,14 @@ if str(AIR_LLM_ROOT) not in sys.path:
 
 import torch  # noqa: E402
 
-from airllm.gpt_oss_mxfp4 import (  # noqa: E402
+from betterairllm.gpt_oss_mxfp4 import (  # noqa: E402
     dequantize_mxfp4_expert,
     dequantize_mxfp4_projection,
     mxfp4_state_nbytes,
     run_gpt_oss_selected_expert_reference_timed,
     tensor_nbytes,
 )
-from airllm.moe_layout_probe import (  # noqa: E402
+from betterairllm.moe_layout_probe import (  # noqa: E402
     GPT_OSS_PACKED_EXPERT_SUFFIXES,
     load_config,
     load_safetensors_index,
@@ -355,7 +355,7 @@ def build_hf_triton_one_expert_module(
             device,
             hf_mxfp4.triton_kernels_hub,
         )
-        module._airllm_hf_mxfp4 = hf_mxfp4
+        module._betterairllm_hf_mxfp4 = hf_mxfp4
         return module, None, None
     except BaseException as exc:  # noqa: BLE001
         detail = _exception_detail(stage, exc)
@@ -370,7 +370,7 @@ def run_hf_triton_one_expert_timed(
     sync_cuda_timing: bool = True,
 ) -> tuple[torch.Tensor, Dict[str, Any]]:
     device = expert_input.device
-    hf_mxfp4 = getattr(module, "_airllm_hf_mxfp4", None)
+    hf_mxfp4 = getattr(module, "_betterairllm_hf_mxfp4", None)
     if hf_mxfp4 is None:
         raise RuntimeError("HF GPT-OSS Triton kernel module was not attached during setup")
 

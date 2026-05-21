@@ -156,9 +156,9 @@ export default function ModelStatusPanel() {
   }, []);
 
   const grouped = useMemo(() => {
-    const airllm = models.filter((model) => model.backend !== "ollama");
+    const betterairllm = models.filter((model) => model.backend !== "ollama");
     const ollama = models.filter((model) => model.backend === "ollama");
-    return { airllm, ollama };
+    return { betterairllm, ollama };
   }, [models]);
 
   return (
@@ -219,7 +219,7 @@ export default function ModelStatusPanel() {
         </div>
       )}
 
-      <ModelGroup title="BetterAirLLM" models={grouped.airllm} preflights={preflights} />
+      <ModelGroup title="BetterAirLLM" models={grouped.betterairllm} preflights={preflights} />
       <ModelGroup title="Ollama" models={grouped.ollama} preflights={preflights} />
 
       {capabilities?.known_limitations?.length ? (
@@ -270,7 +270,7 @@ function ModelGroup({
                   <div className="min-w-0">
                     <div className="truncate font-medium text-white">{model.id}</div>
                     <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-[var(--color-gray-500)]">
-                      <span>{model.backend || "airllm"}</span>
+                      <span>{model.backend || "betterairllm"}</span>
                       <span>{model.source || "hf"}</span>
                       <span>{model.format || "checkpoint"}</span>
                     </div>

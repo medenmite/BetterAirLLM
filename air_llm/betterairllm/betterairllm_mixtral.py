@@ -1,7 +1,7 @@
 
 from transformers import GenerationConfig
 
-from .airllm_moe import BetterAirLLMMoE
+from .betterairllm_moe import BetterAirLLMMoE
 
 
 

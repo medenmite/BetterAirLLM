@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from safetensors.torch import save_file
 
-from airllm.moe_split_builder import IncrementalMoESplitBuilder
+from betterairllm.moe_split_builder import IncrementalMoESplitBuilder
 
 
 class IncrementalMoESplitBuilderTest(unittest.TestCase):

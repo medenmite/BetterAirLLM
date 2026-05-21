@@ -15,17 +15,17 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-if "airllm" not in sys.modules:
-    package = types.ModuleType("airllm")
-    package.__path__ = [str(AIR_LLM_ROOT / "airllm")]
-    sys.modules["airllm"] = package
+if "betterairllm" not in sys.modules:
+    package = types.ModuleType("betterairllm")
+    package.__path__ = [str(AIR_LLM_ROOT / "betterairllm")]
+    sys.modules["betterairllm"] = package
 
 _probe_spec = importlib.util.spec_from_file_location(
-    "airllm.moe_layout_probe",
-    AIR_LLM_ROOT / "airllm" / "moe_layout_probe.py",
+    "betterairllm.moe_layout_probe",
+    AIR_LLM_ROOT / "betterairllm" / "moe_layout_probe.py",
 )
 _probe_module = importlib.util.module_from_spec(_probe_spec)
-sys.modules["airllm.moe_layout_probe"] = _probe_module
+sys.modules["betterairllm.moe_layout_probe"] = _probe_module
 _probe_spec.loader.exec_module(_probe_module)
 download_gpt_oss_one_expert_mxfp4_smoke = _probe_module.download_gpt_oss_one_expert_mxfp4_smoke
 probe_moe_layout = _probe_module.probe_moe_layout
@@ -48,13 +48,13 @@ def _run_one_layer_smoke(args, probe):
             "Install requirements-dev.txt first."
         ) from exc
 
-    from airllm.moe_layout_probe import (
+    from betterairllm.moe_layout_probe import (
         GPT_OSS_DENSE_EXPERT_SUFFIXES,
         GPT_OSS_PACKED_EXPERT_SUFFIXES,
         GPT_OSS_ROUTER_SUFFIXES,
         load_safetensors_index,
     )
-    from airllm.selective_fused_moe import (
+    from betterairllm.selective_fused_moe import (
         GptOssSelectiveFusedMoEAdapter,
         build_fake_gpt_oss_expert_shards,
         fake_gpt_oss_full_fused_moe_forward,
@@ -193,8 +193,8 @@ def _run_qwen35_one_layer_smoke(args, probe):
             "Install requirements-dev.txt first."
         ) from exc
 
-    from airllm.moe_layout_probe import QWEN35_EXPERT_SUFFIXES, QWEN35_ROUTER_SUFFIXES, load_safetensors_index
-    from airllm.selective_fused_moe import Qwen35SelectiveFusedMoEAdapter
+    from betterairllm.moe_layout_probe import QWEN35_EXPERT_SUFFIXES, QWEN35_ROUTER_SUFFIXES, load_safetensors_index
+    from betterairllm.selective_fused_moe import Qwen35SelectiveFusedMoEAdapter
 
     index = load_safetensors_index(args.model, cache_dir=args.cache_dir, token=args.hf_token)
     weight_map = index.get("weight_map") or {}

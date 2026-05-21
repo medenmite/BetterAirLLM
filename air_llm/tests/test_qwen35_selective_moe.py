@@ -3,10 +3,10 @@ import json
 import torch
 from safetensors.torch import save_file
 
-from airllm.moe_layout_probe import build_manifest_verification, probe_qwen35_layout
-from airllm.moe_split_builder import IncrementalMoESplitBuilder
-from airllm.selective_fused_moe import Qwen35SelectiveFusedMoEAdapter
-from airllm.utils import split_moe_layer_state_dict
+from betterairllm.moe_layout_probe import build_manifest_verification, probe_qwen35_layout
+from betterairllm.moe_split_builder import IncrementalMoESplitBuilder
+from betterairllm.selective_fused_moe import Qwen35SelectiveFusedMoEAdapter
+from betterairllm.utils import split_moe_layer_state_dict
 
 
 def _dense_qwen_routed(hidden, gate_up, down, top_k_index, top_k_weights):

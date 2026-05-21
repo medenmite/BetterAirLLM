@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from ..airllm.selective_fused_moe import (
+from ..betterairllm.selective_fused_moe import (
     FakeFusedMoEAdapter,
     build_fake_fused_expert_shards,
     fake_full_expert_bytes,

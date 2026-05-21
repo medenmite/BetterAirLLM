@@ -6,22 +6,22 @@ if platform == "darwin":
     is_on_mac_os = True
 
 if is_on_mac_os:
-    from .airllm_llama_mlx import BetterAirLLMLlamaMlx
+    from .betterairllm_llama_mlx import BetterAirLLMLlamaMlx
     from .auto_model import AutoModel
 else:
-    from .airllm import BetterAirLLMLlama2
-    from .airllm_chatglm import BetterAirLLMChatGLM
-    from .airllm_qwen import BetterAirLLMQWen
-    from .airllm_qwen2 import BetterAirLLMQWen2
+    from .betterairllm import BetterAirLLMLlama2
+    from .betterairllm_chatglm import BetterAirLLMChatGLM
+    from .betterairllm_qwen import BetterAirLLMQWen
+    from .betterairllm_qwen2 import BetterAirLLMQWen2
     try:
-        from .airllm_baichuan import BetterAirLLMBaichuan
+        from .betterairllm_baichuan import BetterAirLLMBaichuan
     except ImportError:
         BetterAirLLMBaichuan = None
-    from .airllm_internlm import BetterAirLLMInternLM
-    from .airllm_mistral import BetterAirLLMMistral
-    from .airllm_moe import BetterAirLLMMoE
-    from .airllm_mixtral import BetterAirLLMMixtral
-    from .airllm_base import BetterAirLLMBaseModel
+    from .betterairllm_internlm import BetterAirLLMInternLM
+    from .betterairllm_mistral import BetterAirLLMMistral
+    from .betterairllm_moe import BetterAirLLMMoE
+    from .betterairllm_mixtral import BetterAirLLMMixtral
+    from .betterairllm_base import BetterAirLLMBaseModel
     from .selective_fused_moe import (
         SelectiveFusedMoEAdapter,
         FakeFusedMoEAdapter,

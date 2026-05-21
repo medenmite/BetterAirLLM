@@ -225,7 +225,7 @@ def build_gpt_oss_hf_triton_selected_expert_module(
         target_device,
         hf_mxfp4.triton_kernels_hub,
     )
-    module._airllm_hf_mxfp4 = hf_mxfp4
+    module._betterairllm_hf_mxfp4 = hf_mxfp4
     return module
 
 
@@ -259,7 +259,7 @@ def run_gpt_oss_selected_expert_hf_triton_timed(
     execution_device = expert_input.device
     if execution_device.type != "cuda":
         raise RuntimeError("HF GPT-OSS Triton MXFP4 execution requires CUDA inputs")
-    hf_mxfp4 = getattr(module, "_airllm_hf_mxfp4", None)
+    hf_mxfp4 = getattr(module, "_betterairllm_hf_mxfp4", None)
     if hf_mxfp4 is None:
         raise RuntimeError("HF GPT-OSS Triton module is missing its kernel hub attachment")
 

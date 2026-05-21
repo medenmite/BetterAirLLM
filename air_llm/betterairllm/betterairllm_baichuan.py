@@ -3,7 +3,7 @@ from transformers import GenerationConfig
 
 from .tokenization_baichuan import BaichuanTokenizer
 
-from .airllm_base import BetterAirLLMBaseModel
+from .betterairllm_base import BetterAirLLMBaseModel
 
 
 
