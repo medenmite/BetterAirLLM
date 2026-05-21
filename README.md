@@ -205,7 +205,7 @@ python scripts/benchmark_gb_per_token.py openai/gpt-oss-20b --runtime auto --max
 
 GPT-OSS models should be used with OpenAI's harmony chat format for quality evaluation. Raw text prompts in `benchmark_gb_per_token.py` are low-level runtime benchmarks only, not model quality benchmarks.
 
-<a href="https://github.com/lyogavin/betterairllm/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/lyogavin/betterairllm?style=social)</a>
+<a href="https://github.com/medenmite/BetterAirLLM/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/medenmite/BetterAirLLM?style=social)</a>
 [![Downloads](https://static.pepy.tech/personalized-badge/betterairllm?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/betterairllm)
 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/LianjiaTech/BELLE/blob/main/LICENSE)
@@ -230,7 +230,7 @@ GPT-OSS models should be used with OpenAI's harmony chat format for quality eval
 
 [2024/08/18] v2.10.1 Support CPU inference. Support non sharded models. Thanks @NavodPeiris for the great work! 
 
-[2024/07/30] Support Llama3.1 **405B** ([example notebook](https://colab.research.google.com/github/lyogavin/betterairllm/blob/main/air_llm/examples/run_llama3.1_405B.ipynb)). Support **8bit/4bit quantization**.
+[2024/07/30] Support Llama3.1 **405B** ([example notebook](https://colab.research.google.com/github/medenmite/BetterAirLLM/blob/main/air_llm/examples/run_llama3.1_405B.ipynb)). Support **8bit/4bit quantization**.
 
 [2024/04/20] BetterAirLLM supports Llama3 natively already. Run Llama3 70B on 4GB single GPU.
 
@@ -252,7 +252,7 @@ GPT-OSS models should be used with OpenAI's harmony chat format for quality eval
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lyogavin/betterairllm&type=Timeline)](https://star-history.com/#lyogavin/betterairllm&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=medenmite/BetterAirLLM&type=Timeline)](https://star-history.com/#medenmite/BetterAirLLM&Timeline)
 
 ## Python API Quickstart
 
@@ -314,7 +314,7 @@ Note: During inference, the original model will first be decomposed and saved la
 
 We just added model compression based on block-wise quantization-based model compression. Which can further **speed up the inference speed** for up to **3x** , with **almost ignorable accuracy loss!** (see more performance evaluation and why we use block-wise quantization in [this paper](https://arxiv.org/abs/2212.09720))
 
-![speed_improvement](https://github.com/lyogavin/betterairllm/blob/main/assets/betterairllm2_time_improvement.png?v=2&raw=true)
+![speed_improvement](https://github.com/medenmite/BetterAirLLM/blob/main/assets/betterairllm2_time_improvement.png?v=2&raw=true)
 
 #### How to enable model compression speed up:
 
@@ -455,14 +455,14 @@ Just install betterairllm and run the code the same as on linux. See more in [Qu
 * you probably need to install python native see more [here](https://stackoverflow.com/a/65432861/21230266)
 * only [Apple silicon](https://support.apple.com/en-us/HT211814) is supported
 
-Example [python notebook] (https://github.com/lyogavin/betterairllm/blob/main/air_llm/examples/run_on_macos.ipynb)
+Example [python notebook] (https://github.com/medenmite/BetterAirLLM/blob/main/air_llm/examples/run_on_macos.ipynb)
 
 
 ## Example Python Notebook
 
 Example colabs here:
 
-<a target="_blank" href="https://colab.research.google.com/github/lyogavin/betterairllm/blob/main/air_llm/examples/run_all_types_of_models.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/medenmite/BetterAirLLM/blob/main/air_llm/examples/run_all_types_of_models.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -610,7 +610,7 @@ BibTex entry:
 @software{betterairllm2023,
   author = {Gavin Li},
   title = {BetterAirLLM: scaling large language models on low-end commodity computers},
-  url = {https://github.com/lyogavin/betterairllm/},
+  url = {https://github.com/medenmite/BetterAirLLM/},
   version = {0.0},
   year = {2023},
 }
