@@ -1,8 +1,3 @@
-"""Safe staged runtime smoke test for BetterAirLLM GPT-OSS 20B.
-
-This script is a runtime smoke test, not an output quality benchmark.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -23,11 +18,11 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-import torch  # noqa: E402
+import torch
 
-from betterairllm import AutoModel  # noqa: E402
-from betterairllm.betterairllm_base import BetterAirLLMBaseModel  # noqa: E402
-from betterairllm.moe_layout_probe import (  # noqa: E402
+from betterairllm import AutoModel
+from betterairllm.betterairllm_base import BetterAirLLMBaseModel
+from betterairllm.moe_layout_probe import (
     download_gpt_oss_one_expert_mxfp4_smoke,
     dry_run_gb_per_token_report,
     load_config,

@@ -1,9 +1,7 @@
-
 from transformers import GenerationConfig
 
 
 from .betterairllm_base import BetterAirLLMBaseModel
-
 
 
 class BetterAirLLMQWen2(BetterAirLLMBaseModel):

@@ -1,21 +1,8 @@
-"""BetterAirLLM OpenAI-Compatible API Server
-
-Wraps BetterAirLLM's layer-wise inference engine as an OpenAI-compatible
-REST API so Open WebUI (or any OpenAI client) can use it.
-
-Endpoints:
-  GET  /v1/models                → list available models
-  POST /v1/chat/completions      → chat completions (streaming + non-streaming)
-
-Usage:
-  python server.py                              # defaults
-  AIRLLM_MODEL=Qwen/Qwen3-30B-A3B python server.py   # custom model
-"""
-
 import asyncio
 import json
 import logging
 import os
+import platform
 import re
 import shutil
 import sys
@@ -37,12 +24,11 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from transformers import AutoConfig, TextIteratorStreamer
 
-# ── Ensure the local betterairllm package is importable ─────────────
-sys.path.insert(0, "air_llm")
-from betterairllm import AutoModel  # noqa: E402
+sys.path.insert(0, "better_air_llm")
+from betterairllm import AutoModel
 
-from server_config import ServerConfig, ModelEntry, load_config  # noqa: E402
-from ollama_registry import (  # noqa: E402
+from server_config import ServerConfig, ModelEntry, load_config
+from ollama_registry import (
     OllamaHTTPError,
     OllamaUnavailable,
     discover_ollama_models,
@@ -57,29 +43,22 @@ from ollama_registry import (  # noqa: E402
 
 try:
     from scripts.run_gpt_oss_streaming import _clean_generated_text
-except Exception:  # noqa: BLE001 - server can still run for non-GPT-OSS models.
+except Exception:
     _clean_generated_text = None
 
-# ── Logging ───────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 log = logging.getLogger("betterairllm-server")
 
-# ── Global State ──────────────────────────────────────────────
-config: ServerConfig = None  # type: ignore
+config: ServerConfig = None
 loaded_model = None
 loaded_model_id: Optional[str] = None
 model_lock = Lock()
 model_manager = None
 last_generation_stats: dict[str, Any] = {}
 runtime_lock = Lock()
-
-
-# ═════════════════════════════════════════════════════════════
-# Pydantic Models (OpenAI API Schema)
-# ═════════════════════════════════════════════════════════════
 
 class ChatMessage(BaseModel):
     role: str
@@ -97,18 +76,11 @@ class ChatCompletionRequest(BaseModel):
     tool_choice: Optional[Union[str, dict[str, Any]]] = None
     reasoning_effort: Optional[str] = None
     reasoning: Optional[dict[str, Any]] = None
-    # Accept but ignore these common OpenAI params
     frequency_penalty: float = 0.0
     presence_penalty: float = 0.0
     stop: Optional[Union[str, list[str]]] = None
 
-
-# ═════════════════════════════════════════════════════════════
-# Model Management
-# ═════════════════════════════════════════════════════════════
-
 async def available_model_entries() -> list[ModelEntry]:
-    """Return configured BetterAirLLM/local models plus dynamically discovered Ollama models."""
     entries = list(config.models)
     if not getattr(config, "discover_ollama", True):
         return entries
@@ -141,11 +113,9 @@ def _dedupe_model_entries(entries: list[ModelEntry]) -> list[ModelEntry]:
 
 
 def find_config_model_entry(model_id: str) -> Optional[ModelEntry]:
-    """Look up a model by ID in the registry."""
     for m in config.models:
         if m.id == model_id:
             return m
-    # Fallback: try matching by repo_id
     for m in config.models:
         if m.repo_id == model_id or m.repo_id.split("/")[-1].lower() == model_id.lower():
             return m
@@ -174,7 +144,6 @@ async def find_model_entry(model_id: str) -> Optional[ModelEntry]:
 
 
 class ModelManager:
-    """Small LRU manager for loaded BetterAirLLM models."""
 
     def __init__(self, max_loaded_models: int = 1) -> None:
         self.max_loaded_models = max(1, int(max_loaded_models))
@@ -213,8 +182,7 @@ class ModelManager:
                 log.info("Unloading LRU model '%s'...", evicted_id)
                 del evicted["model"]
                 self.evictions += 1
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+                _empty_accelerator_cache()
 
             log.info("Loading model '%s' from '%s'...", entry.id, entry.repo_id)
             log.info("  device=%s, compression=%s, max_seq_len=%s", config.device, entry.compression, entry.max_seq_len)
@@ -237,6 +205,21 @@ class ModelManager:
             _sync_legacy_loaded_model(model, entry)
             log.info("[OK] Model '%s' loaded successfully.", entry.id)
             return model, entry
+
+    def unload_model(self, model_id: str) -> bool:
+        with self._lock:
+            if model_id in self._models:
+                evicted = self._models.pop(model_id)
+                log.info("Manually unloading model '%s'...", model_id)
+                del evicted["model"]
+                self.evictions += 1
+                global loaded_model, loaded_model_id
+                if loaded_model_id == model_id:
+                    loaded_model = None
+                    loaded_model_id = None
+                _empty_accelerator_cache()
+                return True
+            return False
 
     def runtime_payload(self) -> dict[str, Any]:
         with self._lock:
@@ -276,7 +259,6 @@ def _sync_legacy_loaded_model(model, entry: ModelEntry) -> None:
 
 
 def get_or_load_model(model_id: str):
-    """Load a model if not already loaded. Thread-safe via ModelManager."""
 
     return _get_model_manager().get_or_load_model(model_id)
 
@@ -394,8 +376,8 @@ def _hf_triton_status() -> dict[str, Any]:
     if not torch.cuda.is_available():
         return {"available": False, "reason": "cuda_unavailable", "cuda_available": False}
     try:
-        import transformers.integrations.mxfp4  # noqa: F401
-        from transformers.integrations.hub_kernels import get_kernel  # noqa: F401
+        import transformers.integrations.mxfp4
+        from transformers.integrations.hub_kernels import get_kernel
     except Exception as exc:
         return {
             "available": False,
@@ -405,12 +387,35 @@ def _hf_triton_status() -> dict[str, Any]:
     return {"available": True, "reason": "available", "cuda_available": True}
 
 
+def _empty_accelerator_cache() -> None:
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        try:
+            torch.mps.empty_cache()
+        except Exception:
+            pass
+
+
+def _mps_available() -> bool:
+    return hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+
+
 def _hardware_profile() -> dict[str, Any]:
     profile: dict[str, Any] = {
         "device": config.device,
         "cuda_available": torch.cuda.is_available(),
+        "mps_available": _mps_available(),
         "torch_version": getattr(torch, "__version__", None),
+        "os": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "version": platform.version(),
+            "machine": platform.machine(),
+            "python_version": platform.python_version(),
+        },
     }
+
     if torch.cuda.is_available():
         try:
             index = _cuda_device_index(config.device)
@@ -427,6 +432,20 @@ def _hardware_profile() -> dict[str, Any]:
             }
         except Exception as exc:
             profile["cuda_error"] = f"{type(exc).__name__}: {exc}"
+
+    if _mps_available():
+        try:
+            mps_info: dict[str, Any] = {
+                "name": "Apple Silicon (MPS)",
+            }
+            if hasattr(torch.mps, "current_allocated_memory"):
+                mps_info["allocated_mb"] = int(torch.mps.current_allocated_memory() / 1024**2)
+            if hasattr(torch.mps, "driver_allocated_memory"):
+                mps_info["driver_allocated_mb"] = int(torch.mps.driver_allocated_memory() / 1024**2)
+            profile["mps"] = mps_info
+        except Exception as exc:
+            profile["mps_error"] = f"{type(exc).__name__}: {exc}"
+
     try:
         usage = shutil.disk_usage(Path.cwd())
         profile["workspace_disk"] = {
@@ -437,6 +456,24 @@ def _hardware_profile() -> dict[str, Any]:
         }
     except Exception:
         pass
+
+    try:
+        import psutil
+        virtual_mem = psutil.virtual_memory()
+        profile["ram"] = {
+            "total_mb": int(virtual_mem.total / 1024**2),
+            "available_mb": int(virtual_mem.available / 1024**2),
+            "used_mb": int(virtual_mem.used / 1024**2),
+            "percent": virtual_mem.percent,
+        }
+        profile["cpu"] = {
+            "percent": psutil.cpu_percent(interval=0.1),
+            "cores_physical": psutil.cpu_count(logical=False),
+            "cores_logical": psutil.cpu_count(logical=True),
+        }
+    except Exception:
+        pass
+
     return profile
 
 
@@ -477,7 +514,6 @@ def _infer_model_family(entry: ModelEntry) -> str:
 
 
 def build_capabilities() -> dict[str, Any]:
-    """Return static and configured runtime capabilities."""
 
     configured_betterairllm = [m.id for m in config.models if m.backend == "betterairllm"]
     configured_ollama = [m.id for m in config.models if m.backend == "ollama"]
@@ -561,7 +597,6 @@ def build_capabilities() -> dict[str, Any]:
 
 
 def build_model_preflight(entry: ModelEntry, *, requested_model_id: Optional[str] = None) -> dict[str, Any]:
-    """Build a non-loading model readiness report."""
 
     warnings_out: list[str] = []
     blockers: list[str] = []
@@ -730,7 +765,7 @@ def _device_preflight_report(device: str) -> dict[str, Any]:
             "configured_max_vram_mb": config.max_vram_mb,
             "arch_list": list(getattr(torch.cuda, "get_arch_list", lambda: [])()),
         })
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         report["warning"] = str(exc)
     return report
 
@@ -741,7 +776,7 @@ def _local_hf_config_summary(repo_id: str, hf_token: Optional[str]) -> dict[str,
         if hf_token:
             kwargs["token"] = hf_token
         model_config = AutoConfig.from_pretrained(repo_id, **kwargs)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return {
             "available_locally": False,
             "warnings": [f"Hugging Face config is not available locally without download: {exc}"],
@@ -825,17 +860,7 @@ def _normalize_openai_messages(messages: list[ChatMessage], *, text_only: bool =
         normalized.append({"role": message.role, "content": content})
     return normalized
 
-
-# ═════════════════════════════════════════════════════════════
-# Chat Template
-# ═════════════════════════════════════════════════════════════
-
 def build_prompt(model, messages: list[ChatMessage], entry: ModelEntry) -> str:
-    """Convert OpenAI messages to a single prompt string.
-
-    Uses the tokenizer's chat_template if available, otherwise falls
-    back to a simple format.
-    """
     msgs = _normalize_openai_messages(messages, text_only=not _messages_have_image(messages))
 
     if _is_gpt_oss_entry(entry) and config.use_harmony_prompt:
@@ -854,7 +879,6 @@ def build_prompt(model, messages: list[ChatMessage], entry: ModelEntry) -> str:
             {"role": "user", "content": user_content},
         ]
 
-    # Try native chat template first.
     try:
         if _is_qwen35_entry(entry) and _messages_have_image(messages):
             processor = getattr(model, "processor", None)
@@ -874,7 +898,6 @@ def build_prompt(model, messages: list[ChatMessage], entry: ModelEntry) -> str:
     except Exception as e:
         log.warning(f"Chat template failed: {e}, using fallback format")
 
-    # Fallback: simple format
     parts = []
     for msg in messages:
         content = _message_content_to_text(msg.content)
@@ -887,13 +910,7 @@ def build_prompt(model, messages: list[ChatMessage], entry: ModelEntry) -> str:
     parts.append("[Assistant]\n")
     return "\n".join(parts)
 
-
-# ═════════════════════════════════════════════════════════════
-# Inference
-# ═════════════════════════════════════════════════════════════
-
 def run_inference(model, entry: ModelEntry, prompt: str, max_tokens: int) -> str:
-    """Run BetterAirLLM inference and return generated text."""
     if getattr(config, "enable_runtime_metrics", True) and hasattr(model, "reset_runtime_stats"):
         model.reset_runtime_stats()
     input_tokens = model.tokenizer(
@@ -928,7 +945,6 @@ def run_inference(model, entry: ModelEntry, prompt: str, max_tokens: int) -> str
 
     log.info(f"Generated {new_tokens} tokens in {elapsed:.1f}s ({tok_per_sec:.1f} tok/s)")
 
-    # Decode only the new tokens
     output_text = model.tokenizer.decode(
         output_ids[input_len:],
         skip_special_tokens=not (_is_gpt_oss_entry(entry) and config.use_harmony_prompt),
@@ -954,7 +970,6 @@ def run_inference(model, entry: ModelEntry, prompt: str, max_tokens: int) -> str
 
 
 def run_inference_stream(model, entry: ModelEntry, prompt: str, max_tokens: int) -> Queue:
-    """Start real token streaming in a worker thread and return an event queue."""
 
     if str(config.stream_mode).lower() == "compat":
         raise RuntimeError("stream_mode=compat disables real streamer generation")
@@ -999,7 +1014,7 @@ def run_inference_stream(model, entry: ModelEntry, prompt: str, max_tokens: int)
                         streamer=streamer,
                         return_dict_in_generate=True,
                     )
-                except BaseException as exc:  # noqa: BLE001
+                except BaseException as exc:
                     generation_error["error"] = exc
                     if hasattr(streamer, "on_finalized_text"):
                         streamer.on_finalized_text("", stream_end=True)
@@ -1034,7 +1049,7 @@ def run_inference_stream(model, entry: ModelEntry, prompt: str, max_tokens: int)
                 },
             )
             event_queue.put(("done", None))
-        except BaseException as exc:  # noqa: BLE001
+        except BaseException as exc:
             event_queue.put(("error", exc))
 
     Thread(target=worker, daemon=True).start()
@@ -1125,11 +1140,6 @@ def _inference_http_exception(exc: Exception) -> HTTPException:
     if "cuda" in lower and "available" in lower:
         return HTTPException(status_code=503, detail=_error_detail("cuda_unavailable", message))
     return HTTPException(status_code=500, detail=_error_detail("inference_failed", message))
-
-
-# ═════════════════════════════════════════════════════════════
-# FastAPI App
-# ═════════════════════════════════════════════════════════════
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -1241,9 +1251,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# ── Health Check ─────────────────────────────────────────────
-
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "betterairllm-server"}
@@ -1324,12 +1331,8 @@ def build_runtime_payload(*, include_ollama: bool = True) -> dict[str, Any]:
         }
     return payload
 
-
-# ── GET /v1/models ───────────────────────────────────────────
-
 @app.get("/v1/capabilities")
 async def capabilities():
-    """Return BetterAirLLM support and runtime capability metadata."""
 
     payload = build_capabilities()
     cache_status = get_ollama_discovery_cache_status(config.ollama_base_url)
@@ -1341,14 +1344,12 @@ async def capabilities():
 
 @app.get("/v1/runtime")
 async def runtime_status():
-    """Return loaded model, hardware, stream, and last-generation runtime metrics."""
 
     return build_runtime_payload()
 
 
 @app.get("/v1/models")
 async def list_models():
-    """Return available models in OpenAI format."""
     models = []
     for m in await available_model_entries():
         models.append({
@@ -1368,12 +1369,8 @@ async def list_models():
         })
     return {"object": "list", "data": models}
 
-
-# ── POST /v1/chat/completions ────────────────────────────────
-
 @app.get("/v1/models/{model_id:path}/preflight")
 async def model_preflight(model_id: str):
-    """Return a readiness report without loading model weights."""
 
     entry = await find_model_entry(model_id)
     if entry is None:
@@ -1381,9 +1378,42 @@ async def model_preflight(model_id: str):
     return build_model_preflight(entry, requested_model_id=model_id)
 
 
+@app.post("/v1/models/{model_id:path}/load")
+async def load_model_endpoint(model_id: str):
+    entry = await find_model_entry(model_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"Model '{model_id}' not found in registry.")
+
+    if entry.backend == "ollama":
+        return {"status": "ok", "message": f"Ollama model '{model_id}' is managed by the Ollama daemon."}
+
+    try:
+        model, entry = await asyncio.get_event_loop().run_in_executor(
+            None, get_or_load_model, model_id
+        )
+        return {
+            "status": "ok",
+            "model_id": entry.id,
+            "backend": entry.backend,
+            "repo_id": entry.repo_id,
+        }
+    except Exception as e:
+        log.error(f"Failed to load model {model_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/v1/models/{model_id:path}/unload")
+async def unload_model_endpoint(model_id: str):
+    manager = _get_model_manager()
+    unloaded = manager.unload_model(model_id)
+    if unloaded:
+        return {"status": "ok", "message": f"Model '{model_id}' unloaded successfully."}
+    else:
+        raise HTTPException(status_code=404, detail=f"Model '{model_id}' is not currently loaded.")
+
+
 @app.post("/v1/chat/completions")
 async def chat_completions(request: ChatCompletionRequest):
-    """Handle chat completion requests (streaming and non-streaming)."""
     request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
     model_id = request.model
     created = int(time.time())
@@ -1431,7 +1461,6 @@ async def chat_completions(request: ChatCompletionRequest):
             },
         )
     else:
-        # Non-streaming response
         try:
             output = await asyncio.get_event_loop().run_in_executor(
                 None, run_inference, model, entry, prompt, request.max_tokens
@@ -1467,7 +1496,6 @@ async def chat_completions(request: ChatCompletionRequest):
 
 
 async def handle_ollama_chat_completion(entry: ModelEntry, request: ChatCompletionRequest):
-    """Proxy an OpenAI-compatible chat request to the local Ollama daemon."""
 
     payload = request.model_dump(by_alias=True, exclude_none=True)
     payload["model"] = entry.ollama_model or raw_ollama_model_name(request.model)
@@ -1503,7 +1531,7 @@ async def ollama_stream_response(payload: dict[str, Any]):
             timeout_seconds=max(30.0, config.ollama_timeout_seconds),
         ):
             yield chunk
-    except Exception as e:  # noqa: BLE001 - convert upstream stream failures to SSE.
+    except Exception as e:
         import json as json_mod
 
         error_chunk = {
@@ -1550,7 +1578,6 @@ def _summarize_running_ollama_models(models: list[dict[str, Any]]) -> list[dict[
 
 
 async def stream_response(model, entry, prompt, request, request_id, created):
-    """Generate SSE stream in OpenAI format."""
 
     if str(config.stream_mode).lower() != "compat":
         yielded_any = False
@@ -1583,7 +1610,6 @@ async def stream_response(model, entry, prompt, request, request_id, created):
 
 
 async def _compat_stream_response(model, entry, prompt, request, request_id, created):
-    """Compatibility stream that chunks a completed generation."""
 
     try:
         output = await asyncio.get_event_loop().run_in_executor(
@@ -1624,11 +1650,6 @@ def _sse_chat_chunk(request_id: str, created: int, model_id: str, delta: dict[st
 
 def _sse_final_chunk(request_id: str, created: int, model_id: str) -> str:
     return _sse_chat_chunk(request_id, created, model_id, {}, finish_reason="stop")
-
-
-# ═════════════════════════════════════════════════════════════
-# Entry Point
-# ═════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     _config = load_config()

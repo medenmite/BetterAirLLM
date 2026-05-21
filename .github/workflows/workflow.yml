@@ -10,7 +10,7 @@ jobs:
     name: Publish Python package to PyPI
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Crucial for Trusted Publishing (OIDC)
+      id-token: write
       contents: read
 
     steps:

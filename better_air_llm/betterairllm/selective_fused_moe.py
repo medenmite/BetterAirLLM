@@ -25,13 +25,6 @@ def state_dict_nbytes(state_dict):
 
 
 class SelectiveFusedMoEAdapter:
-    """Base adapter for stacked/fused MoE blocks.
-
-    The adapter owns routing and expert execution for the fused MLP portion.
-    Subclasses/loaders provide per-expert shards with:
-    - ``gate_up_proj.weight`` shaped ``[2 * intermediate_dim, hidden_dim]``
-    - ``down_proj.weight`` shaped ``[hidden_dim, intermediate_dim]``
-    """
 
     adapter_name = "selective_fused_moe_base"
 
@@ -197,15 +190,6 @@ class FakeFusedMoEAdapter(SelectiveFusedMoEAdapter):
 
 
 class Qwen35SelectiveFusedMoEAdapter(SelectiveFusedMoEAdapter):
-    """Selective adapter for Qwen3.5/3.6 MoE routed experts.
-
-    Hugging Face Qwen3.5-MoE stores routed experts as:
-    - ``gate_up_proj``: ``[num_experts, 2 * intermediate_dim, hidden_dim]``
-    - ``down_proj``: ``[num_experts, hidden_dim, intermediate_dim]``
-
-    Routing remains owned by the Transformers block. The surrounding
-    ``Qwen3_5MoeSparseMoeBlock`` still computes and adds the shared expert.
-    """
 
     adapter_name = "qwen3_5_moe"
 
@@ -269,16 +253,6 @@ class Qwen35SelectiveFusedMoEAdapter(SelectiveFusedMoEAdapter):
 
 
 class GptOssSelectiveFusedMoEAdapter(SelectiveFusedMoEAdapter):
-    """Selective adapter for Hugging Face GPT-OSS fused expert layout.
-
-    Verified layout from ``transformers.models.gpt_oss.modeling_gpt_oss``:
-    - ``gate_up_proj``: ``[num_experts, hidden_dim, 2 * intermediate_dim]``
-    - ``gate_up_proj_bias``: ``[num_experts, 2 * intermediate_dim]``
-    - ``down_proj``: ``[num_experts, intermediate_dim, hidden_dim]``
-    - ``down_proj_bias``: ``[num_experts, hidden_dim]``
-    Router returns ``(_, router_scores, router_indices)`` where scores are
-    softmax over top-k logits.
-    """
 
     adapter_name = "gpt_oss"
 
@@ -541,7 +515,7 @@ class GptOssSelectiveFusedMoEAdapter(SelectiveFusedMoEAdapter):
                     triton_output = self._run_packed_hf_triton_expert(expert_state, expert_input, expert_id)
                     if triton_output is not None:
                         return triton_output
-                except BaseException as exc:  # noqa: BLE001 - optional fast path must fall back cleanly.
+                except BaseException as exc:
                     if isinstance(exc, (KeyboardInterrupt, MemoryError)):
                         raise
                     self.stats["hf_triton_fallbacks"] += 1

@@ -3,7 +3,6 @@ import setuptools
 from setuptools.command.install import install
 import subprocess
 
-# upgrade transformers to latest version to avoid "`rope_scaling` must be a dictionary with two fields" error
 class PostInstallCommand(install):
     def run(self):
         install.run(self)
@@ -12,7 +11,6 @@ class PostInstallCommand(install):
         except subprocess.CalledProcessError:
             print("Warning: Unable to upgrade transformers package. Please upgrade manually.")
 
-# Windows uses a different default encoding (use a consistent encoding)
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
@@ -35,7 +33,7 @@ setuptools.setup(
         'optimum',
         'huggingface-hub',
         'scipy',
-        #'bitsandbytes' set it to optional to support fallback when not installable
+
     ],
     cmdclass={
         'install': PostInstallCommand,

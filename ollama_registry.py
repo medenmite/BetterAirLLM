@@ -1,5 +1,3 @@
-"""Ollama discovery and proxy helpers for the BetterAirLLM server."""
-
 from __future__ import annotations
 
 import asyncio
@@ -47,11 +45,10 @@ class OllamaDiscoveryCacheStatus:
 
 
 class OllamaUnavailable(RuntimeError):
-    """Raised when the Ollama daemon cannot be reached."""
+    pass
 
 
 class OllamaHTTPError(RuntimeError):
-    """Raised when Ollama returns a non-2xx HTTP status."""
 
     def __init__(self, status_code: int, detail: str) -> None:
         super().__init__(detail)
@@ -104,7 +101,6 @@ async def discover_ollama_models(
     ttl_seconds: float = 0.0,
     force_refresh: bool = False,
 ) -> list[ModelEntry]:
-    """Discover installed Ollama models through the local daemon."""
 
     base_url = base_url.rstrip("/")
     now = time.monotonic()
@@ -260,7 +256,7 @@ def _read_error_detail(exc: urlerror.HTTPError) -> str:
         if isinstance(payload, dict):
             return str(payload.get("error") or payload.get("detail") or payload)
         return body
-    except Exception:  # noqa: BLE001
+    except Exception:
         return str(exc)
 
 
@@ -339,7 +335,6 @@ async def proxy_ollama_chat_completion(
     *,
     timeout_seconds: float = 300.0,
 ) -> dict[str, Any]:
-    """Forward a non-streaming OpenAI-compatible chat request to Ollama."""
 
     try:
         return await asyncio.to_thread(
@@ -361,7 +356,6 @@ async def stream_ollama_chat_completion(
     *,
     timeout_seconds: float = 300.0,
 ) -> AsyncIterator[bytes]:
-    """Forward an OpenAI-compatible streaming chat request to Ollama."""
 
     req = _build_json_request(f"{base_url.rstrip('/')}/v1/chat/completions", payload)
     try:

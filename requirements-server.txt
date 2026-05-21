@@ -1,14 +1,12 @@
-# BetterAirLLM OpenAI-Compatible Server Dependencies
-# Install: pip install -r requirements-server.txt
 
 fastapi>=0.100.0
 uvicorn[standard]>=0.23.0
 pydantic>=2.0
 
-# BetterAirLLM core dependencies (should already be installed)
 torch>=2.0.0
 transformers>=4.36.0
 accelerate>=0.20.0
 safetensors
 sentencepiece
 kernels
+psutil>=5.9.0

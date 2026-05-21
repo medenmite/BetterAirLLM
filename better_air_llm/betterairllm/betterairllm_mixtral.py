@@ -1,8 +1,6 @@
-
 from transformers import GenerationConfig
 
 from .betterairllm_moe import BetterAirLLMMoE
-
 
 
 class BetterAirLLMMixtral(BetterAirLLMMoE):

@@ -1,5 +1,3 @@
-"""Qwen3.5/Qwen3.6 MoE strict text-generation smoke test."""
-
 from __future__ import annotations
 
 import argparse
@@ -14,8 +12,8 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-import torch  # noqa: E402
-from betterairllm import AutoModel  # noqa: E402
+import torch
+from betterairllm import AutoModel
 
 
 def _dtype_from_name(name: str):

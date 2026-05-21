@@ -1,4 +1,3 @@
-
 import argparse
 import json
 import time
@@ -16,7 +15,6 @@ import psutil
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, AutoModel, GenerationMixin, LlamaForCausalLM, GenerationConfig
 from .utils import clean_memory, load_layer, \
     find_or_create_local_splitted_path
-
 
 
 @dataclass
@@ -39,10 +37,8 @@ def sanitize_config(config, weights=None):
         config["n_kv_heads"] = n_heads
     if "head_dim" not in config:
         config["head_dim"] = config["dim"] // n_heads
-    #if "hidden_dim" not in config:
-    #    config["hidden_dim"] = weights["layers.0.feed_forward.w1.weight"].shape[0]
-    #if config.get("vocab_size", -1) < 0:
-    #    config["vocab_size"] = weights["output.weight"].shape[-1]
+
+
     if "rope_theta" not in config:
         config["rope_theta"] = 10000
     unused = ["multiple_of", "ffn_dim_multiplier"]
@@ -64,7 +60,7 @@ def get_model_args_from_config(config):
 
     sconfig = sanitize_config(params)
 
-    # quantization = config.pop("quantization", None)
+
     model_args = ModelArgs(**sconfig)
     return model_args
 
@@ -112,7 +108,7 @@ class Attention(nn.Module):
 
         queries, keys, values = self.wq(x), self.wk(x), self.wv(x)
 
-        # Prepare the queries, keys and values for the attention computation
+
         queries = queries.reshape(B, L, self.n_heads, -1).transpose(0, 2, 1, 3)
         keys = keys.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
         values = values.reshape(B, L, self.n_kv_heads, -1).transpose(0, 2, 1, 3)
@@ -184,7 +180,7 @@ def sample(logits, temperature=0):
 
 class BetterAirLLMLlamaMlx:
 
-    # customize layer names here
+
     def set_layer_names_dict(self):
         self.layer_names_dict = {'embed': 'model.embed_tokens',
                        'layer_prefix': 'model.layers',
@@ -218,7 +214,6 @@ class BetterAirLLMLlamaMlx:
         self.show_memory_util = show_memory_util
         self.least_available = None
         self.initial_available = psutil.virtual_memory().available / 1024 / 1024
-
 
 
         self.model_local_path, self.checkpoint_path = find_or_create_local_splitted_path(model_local_path_or_repo_id,
@@ -266,15 +261,13 @@ class BetterAirLLMLlamaMlx:
         cache = []
         TEST_NO_LAYERED = True
 
-        # Make an additive causal mask. We will need that to process the prompt.
+
         mask = nn.MultiHeadAttention.create_additive_causal_mask(x.shape[1])
 
-        # First we process the prompt x the same was as in __call__ but
-        # save the caches in cache
 
         self.record_memory('before_tok_embeddings')
         self.tok_embeddings = nn.Embedding(self.model_args.vocab_size, self.model_args.dim)
-        #w0 = self.tok_embeddings.weight[0][0]
+
         mask = mask.astype(self.tok_embeddings.weight.dtype)
 
         self.record_memory('before_loading_tok')
@@ -282,12 +275,10 @@ class BetterAirLLMLlamaMlx:
 
         self.record_memory('after_loading_tok')
         self.tok_embeddings.update(update_weights['tok_embeddings'])
-        #w1 = self.tok_embeddings.weight[0][0]
 
-        #assert w0 != w1, f"weight should change after updates, weights: {update_weights}"
 
         x = self.tok_embeddings(x)
-        # force execution
+
         mx.eval(x)
 
         if not self.test_nonlayered:
@@ -299,7 +290,7 @@ class BetterAirLLMLlamaMlx:
             self.layers = []
 
         self.record_memory('after_tok_embeddings')
-        #for l in self.layers:
+
 
         for il in tqdm(range(self.model_args.n_layers), desc='running layers'):
             self.record_memory(f'before layer {il}')
@@ -310,9 +301,9 @@ class BetterAirLLMLlamaMlx:
             )
 
             x, c = l(x, mask=mask)
-            # force execution
+
             mx.eval(x)
-            # We store the per layer cache in a simple python list
+
             cache.append(c)
 
             if not self.test_nonlayered:
@@ -328,21 +319,21 @@ class BetterAirLLMLlamaMlx:
             ModelPersister.get_model_persister().load_model(self.layer_names_dict['norm'], self.checkpoint_path)['norm']
         )
         x = self.norm(x)
-        # force execution
+
         mx.eval(x)
         if not self.test_nonlayered:
             del self.norm
             gc.collect()
         self.record_memory('after_norm')
 
-        # We only care about the last logits that generate the next token
+
         self.record_memory('before_lmhead')
         self.output = nn.Linear(self.model_args.dim, self.model_args.vocab_size, bias=False)
         self.output.update(
             ModelPersister.get_model_persister().load_model(self.layer_names_dict['lm_head'], self.checkpoint_path)['output']
         )
         y = self.output(x[:, -1])
-        # force execution
+
         mx.eval(y)
 
         if not self.test_nonlayered:
@@ -352,35 +343,25 @@ class BetterAirLLMLlamaMlx:
         y = sample(y)
 
 
-        # y now has size [1]
-        # Since MLX is lazily evaluated nothing is computed yet.
-        # Calling y.item() would force the computation to happen at
-        # this point but we can also choose not to do that and let the
-        # user choose when to start the computation.
         yield y
 
 
-
-        # Now we parsed the prompt and generated the first token we
-        # need to feed it back into the model and loop to generate the
-        # rest.
         while True:
-            # Unsqueezing the last dimension to add a sequence length
-            # dimension of 1
+
+
             x = y[:, None]
 
             if not self.test_nonlayered:
                 self.record_memory('before_tok_embeddings')
                 self.tok_embeddings = nn.Embedding(self.model_args.vocab_size, self.model_args.dim)
-                #w0 = self.tok_embeddings.weight[0][0]
+
                 self.tok_embeddings.update(
                     ModelPersister.get_model_persister().load_model(self.layer_names_dict['embed'], self.checkpoint_path)['tok_embeddings'])
-                #w1 = self.tok_embeddings.weight[0][0]
 
-                #assert w0 != w1, f"weight should change after updates."
+
             x = self.tok_embeddings(x)
 
-            # force execution
+
             mx.eval(x)
             if not self.test_nonlayered:
                 del self.tok_embeddings
@@ -389,9 +370,7 @@ class BetterAirLLMLlamaMlx:
 
             for i in tqdm(range(len(cache)), desc='running layers'):
                 self.record_memory(f'before layer {il}')
-                # We are overwriting the arrays in the cache list. When
-                # the computation will happen, MLX will be discarding the
-                # old cache the moment it is not needed anymore.
+
 
                 if not self.test_nonlayered:
                     l = TransformerBlock(args=self.model_args)
@@ -401,7 +380,7 @@ class BetterAirLLMLlamaMlx:
                     l = self.layers[i]
 
                 x, cache[i] = l(x, mask=None, cache=cache[i])
-                # force execution
+
                 mx.eval(x)
                 if not self.test_nonlayered:
                     del l
@@ -413,7 +392,7 @@ class BetterAirLLMLlamaMlx:
                 self.norm = RMSNorm(self.model_args.dim, eps=self.model_args.norm_eps)
                 self.norm.update(ModelPersister.get_model_persister().load_model(self.layer_names_dict['norm'], self.checkpoint_path)['norm'])
             x = self.norm(x)
-            # force execution
+
             mx.eval(x)
 
             if not self.test_nonlayered:
@@ -427,7 +406,7 @@ class BetterAirLLMLlamaMlx:
                 self.output.update(ModelPersister.get_model_persister().load_model(self.layer_names_dict['lm_head'], self.checkpoint_path)['output'])
             y = sample(self.output(x[:, -1]))
 
-            # force execution
+
             mx.eval(y)
             if not self.test_nonlayered:
                 del self.output

@@ -42,6 +42,40 @@ class OllamaIntegrationTests(unittest.TestCase):
         self.assertIsNone(entry.format)
         self.assertIsNone(entry.ollama_model)
 
+    def test_load_config_supports_better_prefix(self):
+        old_port = os.environ.get("AIRLLM_PORT")
+        old_better_port = os.environ.get("BETTERAIRLLM_PORT")
+        os.environ["BETTERAIRLLM_PORT"] = "9999"
+        os.environ["AIRLLM_PORT"] = "8888"
+        try:
+            config = load_config()
+            self.assertEqual(config.port, 9999)
+        finally:
+            if old_port is not None:
+                os.environ["AIRLLM_PORT"] = old_port
+            else:
+                os.environ.pop("AIRLLM_PORT", None)
+            if old_better_port is not None:
+                os.environ["BETTERAIRLLM_PORT"] = old_better_port
+            else:
+                os.environ.pop("BETTERAIRLLM_PORT", None)
+
+    def test_load_config_falls_back_to_airllm_prefix(self):
+        old_port = os.environ.get("AIRLLM_PORT")
+        old_better_port = os.environ.get("BETTERAIRLLM_PORT")
+        os.environ.pop("BETTERAIRLLM_PORT", None)
+        os.environ["AIRLLM_PORT"] = "8888"
+        try:
+            config = load_config()
+            self.assertEqual(config.port, 8888)
+        finally:
+            if old_port is not None:
+                os.environ["AIRLLM_PORT"] = old_port
+            else:
+                os.environ.pop("AIRLLM_PORT", None)
+            if old_better_port is not None:
+                os.environ["BETTERAIRLLM_PORT"] = old_better_port
+
     def test_load_config_accepts_new_ollama_entry(self):
         old_models = os.environ.get("AIRLLM_MODELS")
         os.environ["AIRLLM_MODELS"] = json.dumps(

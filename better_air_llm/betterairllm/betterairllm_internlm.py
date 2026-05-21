@@ -1,17 +1,15 @@
-
 from transformers import GenerationConfig
 
 from .betterairllm_base import BetterAirLLMBaseModel
 
 
-
-class BetterAirLLMMistral(BetterAirLLMBaseModel):
+class BetterAirLLMInternLM(BetterAirLLMBaseModel):
 
 
     def __init__(self, *args, **kwargs):
 
 
-        super(BetterAirLLMMistral, self).__init__(*args, **kwargs)
+        super(BetterAirLLMInternLM, self).__init__(*args, **kwargs)
 
     def get_use_better_transformer(self):
         return False

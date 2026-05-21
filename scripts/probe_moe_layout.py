@@ -1,5 +1,3 @@
-"""Probe MoE checkpoint layout without downloading full model shards by default."""
-
 from __future__ import annotations
 
 import argparse

@@ -71,7 +71,6 @@ def _sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
 
 
 class IncrementalMoESplitBuilder:
-    """Resumable MoE split builder using BetterAirLLM's existing flat shard names."""
 
     def __init__(
         self,

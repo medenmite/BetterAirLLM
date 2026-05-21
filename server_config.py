@@ -1,9 +1,3 @@
-"""BetterAirLLM OpenAI-Compatible API Server - Configuration.
-
-Multi-model registry with environment variable overrides.
-Models can be added via AIRLLM_MODELS env var (JSON) or the default registry.
-"""
-
 import json
 import os
 from dataclasses import dataclass, field
@@ -13,7 +7,6 @@ from typing import Any, Optional
 
 @dataclass
 class ModelEntry:
-    """A single model available for inference."""
 
     id: str
     repo_id: str
@@ -38,7 +31,6 @@ class ModelEntry:
 
 @dataclass
 class ServerConfig:
-    """Server-wide configuration."""
 
     host: str = "0.0.0.0"
     port: int = 8000
@@ -74,15 +66,27 @@ class ServerConfig:
 DEFAULT_REGISTRY_PATH = Path(__file__).with_name("model_registry.json")
 
 
+def _get_env(name: str, default: Optional[str] = None) -> Optional[str]:
+    if name.startswith("AIRLLM_"):
+        better_name = name.replace("AIRLLM_", "BETTERAIRLLM_", 1)
+        val = os.getenv(better_name)
+        if val is not None:
+            return val
+    elif name == "HF_TOKEN":
+        val = os.getenv("BETTERAIRLLM_HF_TOKEN")
+        if val is not None:
+            return val
+    return os.getenv(name, default)
+
+
 def _bool_env(name: str, default: bool) -> bool:
-    value = os.getenv(name)
+    value = _get_env(name)
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _default_mxfp4_execution() -> str:
-    """Prefer the HF Triton path only when CUDA is visible at config time."""
 
     try:
         import torch
@@ -101,7 +105,6 @@ def _normalized_stream_mode(value: str) -> str:
 
 
 def load_default_models(registry_path: Optional[str | Path] = None) -> list[ModelEntry]:
-    """Load the default model registry from JSON."""
 
     path = Path(registry_path) if registry_path is not None else DEFAULT_REGISTRY_PATH
     with path.open("r", encoding="utf-8") as handle:
@@ -112,7 +115,6 @@ def load_default_models(registry_path: Optional[str | Path] = None) -> list[Mode
 
 
 def _model_entry_from_dict(item: dict[str, Any]) -> ModelEntry:
-    """Load old and new registry entries without breaking minimal JSON."""
 
     item = dict(item)
     metadata = dict(item.get("metadata") or {})
@@ -133,40 +135,39 @@ def _model_entry_from_dict(item: dict[str, Any]) -> ModelEntry:
 
 
 def load_config() -> ServerConfig:
-    """Build config from environment variables + defaults."""
 
     config = ServerConfig(
-        host=os.getenv("AIRLLM_HOST", "0.0.0.0"),
-        port=int(os.getenv("AIRLLM_PORT", "8000")),
-        device=os.getenv("AIRLLM_DEVICE", "cuda:0"),
-        dense_device=os.getenv("AIRLLM_DENSE_DEVICE"),
-        dtype=os.getenv("AIRLLM_DTYPE", "float16"),
-        hf_token=os.getenv("HF_TOKEN"),
+        host=_get_env("AIRLLM_HOST", "0.0.0.0"),
+        port=int(_get_env("AIRLLM_PORT", "8000")),
+        device=_get_env("AIRLLM_DEVICE", "cuda:0"),
+        dense_device=_get_env("AIRLLM_DENSE_DEVICE"),
+        dtype=_get_env("AIRLLM_DTYPE", "float16"),
+        hf_token=_get_env("HF_TOKEN"),
         prefetching=_bool_env("AIRLLM_PREFETCH", True),
         use_harmony_prompt=_bool_env("AIRLLM_USE_HARMONY_PROMPT", True),
-        reasoning_effort=os.getenv("AIRLLM_REASONING_EFFORT", "low"),
-        max_vram_mb=int(os.getenv("AIRLLM_MAX_VRAM_MB", "7600")),
-        mxfp4_device=os.getenv("AIRLLM_MXFP4_DEVICE", "cuda"),
-        expert_matmul_device=os.getenv("AIRLLM_EXPERT_MATMUL_DEVICE", "cuda"),
-        vram_cache_mode=os.getenv("AIRLLM_VRAM_CACHE_MODE", "packed_experts"),
-        vram_cache_mb=int(os.getenv("AIRLLM_VRAM_CACHE_MB", "4000")),
-        cpu_cache_mb=int(os.getenv("AIRLLM_CPU_CACHE_MB", "12000")),
-        layer_cleanup_interval=int(os.getenv("AIRLLM_LAYER_CLEANUP_INTERVAL", "8")),
-        mxfp4_execution=os.getenv("AIRLLM_MXFP4_EXECUTION", _default_mxfp4_execution()),
-        hf_triton_module_cache_mb=int(os.getenv("AIRLLM_HF_TRITON_MODULE_CACHE_MB", "0")),
-        expert_execution_mode=os.getenv("AIRLLM_EXPERT_EXECUTION_MODE", "grouped_by_expert"),
-        os_reserved_ram_mb=int(os.getenv("AIRLLM_OS_RESERVED_RAM_MB", "8192")),
+        reasoning_effort=_get_env("AIRLLM_REASONING_EFFORT", "low"),
+        max_vram_mb=int(_get_env("AIRLLM_MAX_VRAM_MB", "7600")),
+        mxfp4_device=_get_env("AIRLLM_MXFP4_DEVICE", "cuda"),
+        expert_matmul_device=_get_env("AIRLLM_EXPERT_MATMUL_DEVICE", "cuda"),
+        vram_cache_mode=_get_env("AIRLLM_VRAM_CACHE_MODE", "packed_experts"),
+        vram_cache_mb=int(_get_env("AIRLLM_VRAM_CACHE_MB", "4000")),
+        cpu_cache_mb=int(_get_env("AIRLLM_CPU_CACHE_MB", "12000")),
+        layer_cleanup_interval=int(_get_env("AIRLLM_LAYER_CLEANUP_INTERVAL", "8")),
+        mxfp4_execution=_get_env("AIRLLM_MXFP4_EXECUTION", _default_mxfp4_execution()),
+        hf_triton_module_cache_mb=int(_get_env("AIRLLM_HF_TRITON_MODULE_CACHE_MB", "0")),
+        expert_execution_mode=_get_env("AIRLLM_EXPERT_EXECUTION_MODE", "grouped_by_expert"),
+        os_reserved_ram_mb=int(_get_env("AIRLLM_OS_RESERVED_RAM_MB", "8192")),
         quiet_progress=_bool_env("AIRLLM_QUIET_PROGRESS", True),
-        max_loaded_models=max(1, int(os.getenv("AIRLLM_MAX_LOADED_MODELS", "1"))),
-        stream_mode=_normalized_stream_mode(os.getenv("AIRLLM_STREAM_MODE", "auto")),
+        max_loaded_models=max(1, int(_get_env("AIRLLM_MAX_LOADED_MODELS", "1"))),
+        stream_mode=_normalized_stream_mode(_get_env("AIRLLM_STREAM_MODE", "auto")),
         enable_runtime_metrics=_bool_env("AIRLLM_ENABLE_RUNTIME_METRICS", True),
-        ollama_base_url=os.getenv("AIRLLM_OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/"),
+        ollama_base_url=_get_env("AIRLLM_OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/"),
         discover_ollama=_bool_env("AIRLLM_DISCOVER_OLLAMA", True),
-        ollama_timeout_seconds=float(os.getenv("AIRLLM_OLLAMA_TIMEOUT_SECONDS", "5.0")),
-        ollama_discovery_ttl_seconds=float(os.getenv("AIRLLM_OLLAMA_DISCOVERY_TTL_SECONDS", "10.0")),
+        ollama_timeout_seconds=float(_get_env("AIRLLM_OLLAMA_TIMEOUT_SECONDS", "5.0")),
+        ollama_discovery_ttl_seconds=float(_get_env("AIRLLM_OLLAMA_DISCOVERY_TTL_SECONDS", "10.0")),
     )
 
-    models_json = os.getenv("AIRLLM_MODELS")
+    models_json = _get_env("AIRLLM_MODELS")
     if models_json:
         try:
             raw = json.loads(models_json)
@@ -177,11 +178,11 @@ def load_config() -> ServerConfig:
     else:
         config.models = load_default_models()
 
-    extra_model = os.getenv("AIRLLM_MODEL")
+    extra_model = _get_env("AIRLLM_MODEL")
     if extra_model:
-        extra_id = os.getenv("AIRLLM_MODEL_ID", extra_model.split("/")[-1].lower())
-        extra_compression = os.getenv("AIRLLM_COMPRESSION")
-        extra_max_seq = int(os.getenv("AIRLLM_MAX_SEQ_LEN", "2048"))
+        extra_id = _get_env("AIRLLM_MODEL_ID", extra_model.split("/")[-1].lower())
+        extra_compression = _get_env("AIRLLM_COMPRESSION")
+        extra_max_seq = int(_get_env("AIRLLM_MAX_SEQ_LEN", "2048"))
         entry = ModelEntry(
             id=extra_id,
             repo_id=extra_model,

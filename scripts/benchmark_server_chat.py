@@ -1,10 +1,3 @@
-"""Benchmark the BetterAirLLM OpenAI-compatible chat endpoint.
-
-This script measures non-streaming latency and streaming time-to-first-token
-without importing the local model runtime. It is intentionally dependency-light
-and uses the Python standard library.
-"""
-
 from __future__ import annotations
 
 import argparse

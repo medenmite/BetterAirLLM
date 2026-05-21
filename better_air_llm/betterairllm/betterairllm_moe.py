@@ -15,13 +15,6 @@ from .utils import clean_memory
 
 
 class BetterAirLLMMoE(BetterAirLLMBaseModel):
-    """Generic MoE BetterAirLLM runtime.
-
-    MoE checkpoints are split into a dense shard per transformer block plus
-    one shard for each ``*.experts.<id>`` module. During layer execution the
-    HuggingFace MoE implementation still owns routing, but each expert loads
-    its own shard lazily when the router calls that expert.
-    """
 
     def __init__(self, *args, **kwargs):
         self._qwen35_moe_layout = bool(kwargs.pop("qwen3_5_moe_layout", False))

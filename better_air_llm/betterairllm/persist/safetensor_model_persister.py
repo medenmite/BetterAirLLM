@@ -1,11 +1,7 @@
-
-
 import os
 from pathlib import Path
 from .model_persister import ModelPersister
 from safetensors.torch import load_file, save_file
-
-
 
 
 class SafetensorModelPersister(ModelPersister):
@@ -29,7 +25,7 @@ class SafetensorModelPersister(ModelPersister):
 
         print(f"saved as: {saving_path / (layer_name + 'safetensors')}")
 
-        # set done marker
+
         (saving_path / (layer_name + 'safetensors.done')).touch()
 
 

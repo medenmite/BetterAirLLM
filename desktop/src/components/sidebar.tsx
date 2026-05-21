@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import ModelStatusPanel from "@/components/model-status-panel";
 
-// ─────────────────────────── Types ─────────────────────────────
+
 interface ChatItem {
   id: string;
   title: string;
@@ -32,7 +32,7 @@ interface FolderGroup {
   chats: ChatItem[];
 }
 
-// ─────────────────────────── Mock Data ─────────────────────────
+
 const pinnedChats: ChatItem[] = [
   { id: "pin1", title: "BetterAirLLM Architecture Overview" },
   { id: "pin2", title: "Memory-mapped Tensor Loading" },
@@ -74,7 +74,7 @@ const folders: FolderGroup[] = [
   },
 ];
 
-// ─────────────────────────── Chat Item Row ─────────────────────
+
 function ChatRow({
   chat,
   isActive,
@@ -130,7 +130,6 @@ function ChatRow({
         <span className="line-clamp-1">{chat.title}</span>
       </div>
 
-      {/* Gradient fade on long text */}
       {!isHovered && !showMenu && (
         <div
           className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none rounded-r-xl"
@@ -142,7 +141,6 @@ function ChatRow({
         />
       )}
 
-      {/* 3-dot menu */}
       <AnimatePresence>
         {(isHovered || showMenu) && (
           <motion.button
@@ -161,7 +159,6 @@ function ChatRow({
         )}
       </AnimatePresence>
 
-      {/* Dropdown Menu */}
       <AnimatePresence>
         {showMenu && (
           <motion.div
@@ -201,7 +198,7 @@ function ChatRow({
   );
 }
 
-// ─────────────────────────── Collapsible Folder ───────────────
+
 function FolderSection({
   name,
   children,
@@ -254,7 +251,7 @@ function FolderSection({
   );
 }
 
-// ─────────────────────────── Settings Modal ────────────────────
+
 function SettingsModal({
   isOpen,
   onClose,
@@ -331,9 +328,9 @@ function SettingsModal({
   );
 }
 
-// ═════════════════════════════════════════════════════════════════
-// ████ Main Sidebar Export ██████████████████████████████████████
-// ═════════════════════════════════════════════════════════════════
+
+
+
 export default function Sidebar({
   activeChatId,
   onNewChat,
@@ -349,9 +346,7 @@ export default function Sidebar({
   return (
     <>
       <div className="flex flex-col h-screen max-h-screen select-none bg-[var(--color-gray-950)]/70 text-[var(--color-gray-200)] text-sm">
-        {/* ── Sticky Header ─────────────────────────────────── */}
         <div className="px-[0.5625rem] pt-2 pb-1.5 flex justify-between items-center space-x-1 text-[var(--color-gray-600)] sticky top-0 z-10">
-          {/* Logo / Brand */}
           <button
             type="button"
             className="flex items-center rounded-xl h-[34px] justify-center hover:bg-[var(--color-gray-100)]/5 transition px-1.5"
@@ -381,7 +376,6 @@ export default function Sidebar({
             <PanelLeft className="h-[18px] w-[18px]" />
           </button>
 
-          {/* Gradient indicator for scroll */}
           <div
             className={`${scrollTop > 0 ? "visible" : "invisible"} pointer-events-none absolute inset-0 -z-10 -mb-6`}
             style={{
@@ -390,12 +384,10 @@ export default function Sidebar({
           />
         </div>
 
-        {/* ── Scrollable Content ─────────────────────────────── */}
         <div
           className="relative flex flex-col flex-1 overflow-y-auto scrollbar-hidden pt-3 pb-3"
           onScroll={(e) => setScrollTop((e.target as HTMLElement).scrollTop)}
         >
-          {/* New Chat Button */}
           <div className="pb-1.5">
             <div className="px-[0.4375rem] flex justify-center text-[var(--color-gray-800)] dark:text-[var(--color-gray-200)]">
               <button
@@ -412,7 +404,6 @@ export default function Sidebar({
               </button>
             </div>
 
-            {/* Search Button */}
             <div className="px-[0.4375rem] flex justify-center text-[var(--color-gray-200)]">
               <button
                 className="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-[var(--color-gray-900)] transition outline-none"
@@ -426,7 +417,6 @@ export default function Sidebar({
               </button>
             </div>
 
-            {/* Pinned Menu Items */}
             <div className="px-[0.4375rem] flex justify-center text-[var(--color-gray-200)]">
               <a
                 href="/notes"
@@ -458,7 +448,6 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* Folders Section */}
           <FolderSection name="Folders" defaultOpen>
             {folders.map((folder) => (
               <FolderSection key={folder.id} name={folder.name} defaultOpen={false}>
@@ -476,9 +465,7 @@ export default function Sidebar({
             ))}
           </FolderSection>
 
-          {/* Chats Section */}
           <FolderSection name="Chats" defaultOpen>
-            {/* Pinned */}
             {pinnedChats.length > 0 && (
               <div className="mb-1">
                 <FolderSection name="Pinned" defaultOpen>
@@ -496,7 +483,6 @@ export default function Sidebar({
               </div>
             )}
 
-            {/* Time-grouped chats */}
             <div className="flex-1 flex flex-col pt-1.5">
               {[todayChats, yesterdayChats, olderChats].map((group, gi) => (
                 <React.Fragment key={gi}>
@@ -521,9 +507,7 @@ export default function Sidebar({
           </FolderSection>
         </div>
 
-        {/* ── Bottom User Area ──────────────────────────────── */}
         <div className="px-1.5 pt-1.5 pb-2 sticky bottom-0 z-10">
-          {/* Gradient fade */}
           <div
             className="pointer-events-none absolute inset-0 -z-10 -mt-6"
             style={{

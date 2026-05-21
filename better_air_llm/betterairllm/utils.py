@@ -38,12 +38,7 @@ except ImportError:
 import huggingface_hub
 
 
-# replacement for bnb quantstat.as_dict(True), until the bug is fixed....
 def save_quant_state_to_dict(self, packed=True):
-    """
-    returns dict of tensors and strings to use in serialization via _save_to_state_dict()
-    param: packed -- returns dict[str, torch.Tensor] for state_dict
-    """
     qs_dict = {
         'quant_type': self.quant_type,
         'absmax': self.absmax,
@@ -69,17 +64,16 @@ def save_quant_state_to_dict(self, packed=True):
     return qs_packed_dict
 
 
-
 class NotEnoughSpaceException(Exception):
     pass
 
-# Function to clean RAM & vRAM
+
 def clean_memory():
     gc.collect()
     try:
         ctypes.CDLL("libc.so.6").malloc_trim(0)
     except Exception as ex:
-        # maybe platform
+
         pass
     torch.cuda.empty_cache()
 
@@ -115,7 +109,7 @@ def uncompress_layer_state_dict(layer_state_dict):
     return layer_state_dict if uncompressed_layer_state_dict is None else uncompressed_layer_state_dict
 
 def load_layer(local_path, layer_name, profiling=False):
-    #layer_state_dict = load_file(Path(local_path) / (layer_name + ".safetensors"), device="cpu")
+
     layer_state_dict = ModelPersister.get_model_persister().load_model(layer_name, local_path)
 
     if profiling:
@@ -123,14 +117,12 @@ def load_layer(local_path, layer_name, profiling=False):
 
     to_return = uncompress_layer_state_dict(layer_state_dict)
 
-    #clean_memory()
 
     if profiling:
         elapsed_time = time.process_time() - t
         return to_return, elapsed_time
     else:
         return to_return
-
 
 
 def check_space(checkpoint_path, layer_shards_saving_path=None, compression=None, splitted_model_dir_name='splitted_model'):
@@ -313,14 +305,6 @@ def split_moe_layer_state_dict(
         num_experts=None,
         return_metadata=False,
         drop_fused_from_dense=False):
-    """Split a transformer block state dict into dense tensors and experts.
-
-    The direct matcher keys off the common HuggingFace convention
-    ``*.experts.<id>.*``. Fused tensors such as ``*.experts.gate_up_proj``
-    are also split when ``num_experts`` can be inferred and one tensor
-    dimension equals that expert count. Shared experts stay in the dense
-    shard because they are active for every token.
-    """
     dense_state_dict = {}
     expert_state_dicts = defaultdict(dict)
     metadata = {
@@ -367,15 +351,11 @@ def remove_real_and_linked_file(to_delete):
          os.remove(targetpath)
 
 
-
 def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitted_model_dir_name='splitted_model',
                           compression=None, layer_names=None, delete_original=False, repo_id=None, hf_token=None,
                           moe_expert_sharding=False, moe_strict_streaming=False,
                           moe_allow_dense_fallback=False, moe_selective_fused_adapter_name=None,
                           resume_split_build=False, lazy_build=False):
-    """
-    Save the all layers of a model sharded checkpoint using safetensors.
-    """
 
     if compression is not None:
         assert bitsandbytes_installed, f"when using compression bitsandbytes has to be installed."
@@ -429,13 +409,12 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
         layers = [l + "." for l in layers]
 
 
-    # check if splitting exists and all files are there
     found_layers = None
-    #print(f"checking exists: {saving_path}")
+
     moe_expert_manifest_path = saving_path / "moe_expert_index.json"
 
     if os.path.exists(saving_path):
-        # dir already exists, check if all layer files are there
+
 
         found_layers = {}
         for layer in layers:
@@ -468,7 +447,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
                         return str(saving_path)
                 print(f"MoE dense layer splits found, but expert manifest is missing or incomplete; re-saving layers.", file=stderr)
             else:
-                # already downloaded, return saving path...
+
                 print(f"saved layers already found in {saving_path}", file=stderr)
                 return str(saving_path)
         else:
@@ -488,15 +467,14 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
 
 
     if not os.path.exists(saving_path):
-        #os.makedirs(saving_path)
+
         saving_path.mkdir(parents=True, exist_ok=True)
 
     single_modelfile = None
 
     for layer_idx, layer in enumerate(tqdm(layers)):
 
-        # Optionnally load next shard
-        # checking whether after spliting from '-', if second element exists. otherwise it throws errors for single 'model.safetensor' files
+
         shard_files = sorted({v for k, v in index.items() if k.startswith(layer) and '-' in v and len(v.split('-')) > 1})
         if len(shard_files) > 0:
             for shard_file in shard_files:
@@ -505,7 +483,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
                 print(f'Loading shard {shard_file}', file=stderr)
                 to_load = checkpoint_path / shard_file
 
-                # check if to_load exist, if not downloaad it...
+
                 if not os.path.exists(to_load):
                     assert repo_id is not None
                     huggingface_hub.snapshot_download(repo_id, allow_patterns=os.path.basename(to_load),
@@ -521,7 +499,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
             shards = [v for k, v in index.items() if k.startswith(layer)]
             single_modelfile = shards[0]
             to_load = checkpoint_path / single_modelfile
-            # check if to_load exist, if not downloaad it...
+
             if not os.path.exists(to_load):
                 assert repo_id is not None
                 huggingface_hub.snapshot_download(repo_id, allow_patterns=os.path.basename(to_load),
@@ -531,7 +509,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
             else:
                 state_dict.update(load_file(to_load, device='cpu'))
 
-        # Get layer state dict
+
         layer_state_dict = dict([(k, v) for k, v in state_dict.items() if k.startswith(layer)])
         original_layer_keys = list(layer_state_dict.keys())
 
@@ -561,7 +539,6 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
 
         layer_state_dict = compress_layer_state_dict(layer_state_dict, compression)
 
-        # Save layer state dict as using safetensors
 
         marker_exists = ModelPersister.get_model_persister().model_persist_exist(layer, saving_path)
         if not marker_exists:
@@ -575,7 +552,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
             if not marker_exists:
                 ModelPersister.get_model_persister().persist_model(expert_state_dict, expert_layer_name, saving_path)
 
-        # Free memory
+
         for k in original_layer_keys:
             if k in state_dict:
                 del state_dict[k]
@@ -592,8 +569,7 @@ def split_and_save_layers(checkpoint_path, layer_shards_saving_path=None, splitt
         del expert_state_dicts
         clean_memory()
 
-    # deleting single modelfile if only a single modelfile was existing in hf repo 
-    # and deletion of single modelfile should happen in the end if delete_original=True
+
     if delete_original and single_modelfile != None:
         to_delete = checkpoint_path / single_modelfile
         print(f"deleting original file: {to_delete}", file=stderr)
@@ -647,29 +623,8 @@ def find_or_create_local_splitted_path(model_local_path_or_repo_id, layer_shards
                                        moe_expert_sharding=False, moe_strict_streaming=False,
                                        moe_allow_dense_fallback=False, moe_selective_fused_adapter_name=None,
                                        resume_split_build=False, lazy_build=False):
-    """
-    find the model's local cache path, download the cache if not exists, then split and save the model.
 
-    Parameters
-    ----------
-    model_local_path_or_repo_id : str
-        model local path or hf repo id
-    layer_shards_saving_path : str, optional
-        optional path to save the splitted model, by default directly under the model local path
 
-    Returns
-    -------
-    model_local_path : str
-        local model path
-    saved_layer_shards_path : str
-        the path saved layer shards
-    compression: str, optinal
-        setting to '4bit' or '8bit' to enable compression from 16 bits to 4 bits/8 bits which speeed up 4x or 2x inference time with a tiny accuracy loss.
-    hf_token: str, optional
-        huggingface api token could be provided, by default None
-    """
-
-    # try local model path, if the model exist split and save there
     if os.path.exists(model_local_path_or_repo_id):
         local_model_path = Path(model_local_path_or_repo_id)
         if os.path.exists(local_model_path / 'pytorch_model.bin.index.json') or \
@@ -691,14 +646,12 @@ def find_or_create_local_splitted_path(model_local_path_or_repo_id, layer_shards
                 file=stderr,
             )
 
-    # it should be a repo id at this point...
+
     hf_cache_path = huggingface_hub.snapshot_download(model_local_path_or_repo_id, token=hf_token,
-        #allow_patterns= ["model.safetensors.index.json", 'pytorch_model.bin.index.json'],
+
         ignore_patterns=['*.safetensors', '*.bin'])
 
 
-    # check if there's safetensors saved, if so, exclude torch saves
-    # delay download now...
     '''
     hf_cache_path = huggingface_hub.snapshot_download(model_local_path_or_repo_id, token=hf_token, allow_patterns="model.safetensors.index.json")
     if len(glob(str(Path(hf_cache_path) / "model.safetensors.index.json"))) > 0:
@@ -711,11 +664,7 @@ def find_or_create_local_splitted_path(model_local_path_or_repo_id, layer_shards
                                                           token=hf_token)
     '''
 
-    #assert os.path.exists(Path(hf_cache_path) / 'pytorch_model.bin.index.json') or \
-    #       os.path.exists(Path(hf_cache_path) / 'model.safetensors.index.json'), \
-    #       f"{hf_cache_path}/pytorch_model.bin.index.json or {hf_cache_path}/model.safetensors.index.json should exists."
 
-    # if splitted_model subdir exists under cache use it, otherwise split and save
     return Path(hf_cache_path), split_and_save_layers(hf_cache_path, layer_shards_saving_path,
                                                       compression=compression, layer_names=layer_names,
                                                       delete_original=delete_original, repo_id=model_local_path_or_repo_id,

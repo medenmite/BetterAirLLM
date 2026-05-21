@@ -1,10 +1,3 @@
-"""Benchmark one GPT-OSS MXFP4 selected expert.
-
-This is intentionally isolated from the production runtime. It loads one
-selected expert from GPT-OSS safetensors, benchmarks the current reference path,
-then compares it with a conservative dequant-chunked down-projection prototype.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -22,16 +15,16 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-import torch  # noqa: E402
+import torch
 
-from betterairllm.gpt_oss_mxfp4 import (  # noqa: E402
+from betterairllm.gpt_oss_mxfp4 import (
     dequantize_mxfp4_expert,
     dequantize_mxfp4_projection,
     mxfp4_state_nbytes,
     run_gpt_oss_selected_expert_reference_timed,
     tensor_nbytes,
 )
-from betterairllm.moe_layout_probe import (  # noqa: E402
+from betterairllm.moe_layout_probe import (
     GPT_OSS_PACKED_EXPERT_SUFFIXES,
     load_config,
     load_safetensors_index,
@@ -307,7 +300,7 @@ def _load_hf_gpt_oss_triton_kernel():
 
         hf_mxfp4.triton_kernels_hub = get_kernel("kernels-community/gpt-oss-triton-kernels")
         return hf_mxfp4, None, None
-    except BaseException as exc:  # noqa: BLE001 - dependency/compiler failures must be reported, not fatal.
+    except BaseException as exc:
         detail = _exception_detail("load_hf_gpt_oss_triton_kernel", exc)
         return None, _exception_summary(detail), detail
 
@@ -357,7 +350,7 @@ def build_hf_triton_one_expert_module(
         )
         module._betterairllm_hf_mxfp4 = hf_mxfp4
         return module, None, None
-    except BaseException as exc:  # noqa: BLE001
+    except BaseException as exc:
         detail = _exception_detail(stage, exc)
         return None, _exception_summary(detail), detail
 
@@ -393,7 +386,7 @@ def run_hf_triton_one_expert_timed(
         )
         gather_idx = GatherIndx(src_indx=source_indices, dst_indx=source_indices)
         scatter_idx = ScatterIndx(src_indx=source_indices, dst_indx=source_indices)
-    except BaseException as exc:  # noqa: BLE001
+    except BaseException as exc:
         raise BenchmarkStageError(_exception_detail("build_hf_triton_routing_metadata", exc)) from exc
 
     if sync_cuda_timing:
@@ -401,7 +394,7 @@ def run_hf_triton_one_expert_timed(
     started = time.perf_counter()
     try:
         output = module(expert_input, routing_data, gather_idx, scatter_idx)
-    except BaseException as exc:  # noqa: BLE001
+    except BaseException as exc:
         raise BenchmarkStageError(_exception_detail("hf_triton_module_forward", exc)) from exc
     if sync_cuda_timing:
         _sync(device)
@@ -618,7 +611,7 @@ def main() -> int:
             except BenchmarkStageError as exc:
                 hf_triton_error_detail = exc.detail
                 hf_triton_error = _exception_summary(hf_triton_error_detail)
-            except BaseException as exc:  # noqa: BLE001
+            except BaseException as exc:
                 hf_triton_error_detail = _exception_detail("benchmark_hf_triton_fused", exc)
                 hf_triton_error = _exception_summary(hf_triton_error_detail)
     max_abs_diff = float((ref_output - chunked_output).abs().max().item())

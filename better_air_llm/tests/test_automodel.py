@@ -1,7 +1,6 @@
 import sys
 import unittest
 
-#sys.path.insert(0, '../betterairllm')
 
 from ..betterairllm.auto_model import AutoModel
 

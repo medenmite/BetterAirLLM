@@ -1,4 +1,3 @@
-
 from typing import List, Optional, Tuple, Union
 from tqdm import tqdm
 from pathlib import Path
@@ -18,7 +17,7 @@ from transformers.quantizers import AutoHfQuantizer, HfQuantizer
 from .profiler import LayeredProfiler
 
 try:
-    from optimum.bettertransformer import BetterTransformer
+    from optimum.bettertransformer import BetterTransformer  # type: ignore
     _has_better_transformer = True
 except ImportError:
     _has_better_transformer = False
@@ -27,13 +26,12 @@ from .utils import clean_memory, load_layer, \
     find_or_create_local_splitted_path
 
 try:
-    import bitsandbytes as bnb
+    import bitsandbytes as bnb  # type: ignore
 
     bitsandbytes_installed = True
     print('>>>> bitsandbytes installed', file=stderr)
 except ImportError:
     bitsandbytes_installed = False
-
 
 
 try:
@@ -45,19 +43,13 @@ except ImportError:
     cache_utils_installed = False
 
 
-
-
-
-
 class BetterAirLLMBaseModel(GenerationMixin):
 
-    # customize layer names here
     def set_layer_names_dict(self):
         self.layer_names_dict = {'embed': 'model.embed_tokens',
                        'layer_prefix': 'model.layers',
                        'norm': 'model.norm',
                        'lm_head': 'lm_head',}
-
 
 
     def __init__(self, model_local_path_or_repo_id, device="cuda:0", dtype=torch.float16, max_seq_len=512,
@@ -71,30 +63,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                  mxfp4_device=None, expert_matmul_device=None, dense_device=None,
                  max_vram_mb=None, sync_cuda_timing=False, keep_nontransformer_resident=False,
                  quiet_progress=False):
-        """
-        Sharded version of LlamaForCausalLM : the model is splitted into layer shards to reduce GPU memory usage.
-        During the forward pass, the inputs are processed layer by layer, and the GPU memory is freed after each layer.
-        To avoid loading the layers multiple times, we could save all the intermediate activations in RAM.
-
-        Parameters
-        ----------
-        model_local_path_or_repo_id : str or Path
-            path to the local model checkpoint or huggingface repo id
-        device : str, optional
-            device, by default "cuda:0"
-        dtype : torch.dtype, optional
-            dtype, by default torch.float16
-        max_seq_len : int, optional
-            max seq lenght, by default 512
-        layer_shards_saving_path : str, optional
-            optional path to save layered shards model file, by default just save to the local cache of model, subdir named splitted_model will be saved
-        profiling_mode : book, optional
-            if to profile the model loading time, default to False
-        compression: str, optinal
-            setting to '4bit' or '8bit' to enable compression from 16 bits to 4 bits/8 bits which speeed up 4x or 2x inference time with a tiny accuracy loss.
-        hf_token: str, optional
-            huggingface api token could be provided, by default None
-        """
 
 
         self.profiling_mode = profiling_mode
@@ -136,8 +104,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
         self.compression = compression
         self.hf_token = hf_token
 
-        # Save parameters
-
         self.set_layer_names_dict()
 
 
@@ -160,7 +126,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
         self.running_dtype = dtype
         self.dtype = self.running_dtype
 
-        # Create model
         if hf_token is not None:
             self.config = AutoConfig.from_pretrained(self.model_local_path, token=hf_token, trust_remote_code=True)
         else:
@@ -171,14 +136,12 @@ class BetterAirLLMBaseModel(GenerationMixin):
         self.check_kv_cache_safety()
 
         self.generation_config = self.get_generation_config()
-        #print(f"using generation_config: {self.generation_config}")
+
 
         self.tokenizer = self.get_tokenizer(hf_token=hf_token)
 
 
         self.init_model()
-
-        # get layer count:
         model_attr = self.model
         for attr_name in self.layer_names_dict["layer_prefix"].split("."):
             model_attr = getattr(model_attr, attr_name)
@@ -211,14 +174,12 @@ class BetterAirLLMBaseModel(GenerationMixin):
                 allow_dense_fallback=self.moe_allow_dense_fallback,
             )
 
-        # model weights prefetch cuda stream
         self.prefetching = prefetching
 
         if self.compression is not None:
             self.prefetching = False
             print(f"not support prefetching for compression for now. loading with no prepetching mode.", file=stderr)
 
-        # this operation should run only if gpu is available
         if prefetching and device.startswith("cuda"):
             self.stream = torch.cuda.Stream()
         else:
@@ -228,7 +189,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
             self._prepare_resident_nontransformer_layers()
 
     def set_experts_implementation(self, experts_implementation):
-        """Compatibility hook used by Transformers generation for MoE decode."""
         requested = (
             experts_implementation
             if not isinstance(experts_implementation, dict)
@@ -240,16 +200,13 @@ class BetterAirLLMBaseModel(GenerationMixin):
             return self.model.set_experts_implementation(experts_implementation)
         return None
 
-    # if derived class needs to create generation config differently, like Mistrial, this function can be overridden
     def get_generation_config(self):
-        # protective on generation config
 
         try:
             return GenerationConfig.from_pretrained(self.model_local_path)
         except Exception as e:
             return GenerationConfig()
 
-    # a chance to customize tokenizer
     def get_tokenizer(self, hf_token=None):
         kwargs = {"trust_remote_code": True}
         if hf_token is not None:
@@ -289,22 +246,19 @@ class BetterAirLLMBaseModel(GenerationMixin):
 
     def init_model(self):
 
-        # try way 1 better transformers...
-        # Load meta model (no memory used)
         self.model = None
 
         if self.get_use_better_transformer() and _has_better_transformer:
             try:
                 with init_empty_weights():
                     self.model = self._empty_model_from_config()
-                    self.model = BetterTransformer.transform(self.model)  # enable flash attention
+                    self.model = BetterTransformer.transform(self.model)
             except ValueError as ve:
                 del self.model
                 clean_memory()
                 self.model = None
 
             if self.model is None:
-                # try way 2.
                 try:
 
                     print(f"new version of transfomer, no need to use BetterTransformer, try setting attn impl to sdpa...", file=stderr)
@@ -319,7 +273,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                     clean_memory()
                     self.model = None
 
-        # fallback to original way
         if self.model is None:
             print(f"either BetterTransformer or attn_implementation='sdpa' is available, creating model directly", file=stderr)
             with init_empty_weights():
@@ -337,13 +290,11 @@ class BetterAirLLMBaseModel(GenerationMixin):
 
         self.set_layers_from_layer_names()
 
-        # Move buffers to device (not that much GPU memory used)
         for buffer_name, buffer in self.model.named_buffers():
             set_module_tensor_to_device(self.model, buffer_name, self.running_device, value=buffer,
                                         dtype=self.running_dtype)
 
         if 'rotary_pos_emb' in self.layer_names_dict:
-            # for glm keep rotary_pos_emb in gpu
             self.load_rotary_pos_emb_to_device()
 
     def _empty_model_from_config(self, **kwargs):
@@ -421,14 +372,12 @@ class BetterAirLLMBaseModel(GenerationMixin):
         self._runtime_stats['cpu_load_seconds'] += load_elapsed
         self._layer_runtime_stats(layer_name)['dense_load_seconds'] += load_elapsed
 
-        # pin memory:
         if self.prefetching:
             t = time.time()
-            if torch.cuda.is_available():  # Check if CUDA is available
+            if torch.cuda.is_available():
                 for k in state_dict.keys():
                     state_dict[k].pin_memory()
             else:
-                # For CPU, no action is needed, but you could optionally add a log or message
                 print("Prefetching is enabled, but no pin_memory operation is needed for CPU.", file=stderr)
 
             elapsed_time = time.time() - t
@@ -647,7 +596,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
         else:
             layer.to("meta")
 
-    # make GenerationMixin happy
     def can_generate(self):
         return True
 
@@ -655,26 +603,22 @@ class BetterAirLLMBaseModel(GenerationMixin):
             self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
     ):
         if past_key_values is not None:
-            past_length = self.get_past_key_values_cache_seq_len(past_key_values) #[0][0].shape[2]
+            past_length = self.get_past_key_values_cache_seq_len(past_key_values)
 
-            # Some generation methods already pass only the last input ID
             if input_ids.shape[1] > past_length:
                 remove_prefix_length = past_length
             else:
-                # Default to old behavior: keep only final ID
                 remove_prefix_length = input_ids.shape[1] - 1
 
             input_ids = input_ids[:, remove_prefix_length:]
 
         position_ids = kwargs.get("position_ids", None)
         if attention_mask is not None and position_ids is None:
-            # create position_ids on the fly for batch generation
             position_ids = attention_mask.long().cumsum(-1) - 1
             position_ids.masked_fill_(attention_mask == 0, 1)
             if past_key_values is not None:
                 position_ids = position_ids[:, -input_ids.shape[1]:]
 
-        # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
         if inputs_embeds is not None and past_key_values is None:
             model_inputs = {"inputs_embeds": inputs_embeds}
         else:
@@ -866,8 +810,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
             forward_start_wall = time.time()
 
         if self.reinitialize_each_forward:
-            # Compatibility escape hatch for models whose custom layers keep
-            # non-state_dict runtime tensors after being moved to meta.
             del self.model
             clean_memory()
             self.init_model()
@@ -879,7 +821,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
             batch = [input_ids_unit.to(self.running_device).unsqueeze(0) for input_ids_unit in input_ids]
         n_seq = len(batch[0])
 
-        # Create attention mask for the largest input, and position ids to use KV cache
         attention_mask = torch.ones(self.max_seq_len, self.max_seq_len)
         attention_mask = attention_mask.triu(diagonal=1)[None, None, ...] == 0
         attention_mask = attention_mask.to(self.running_device)
@@ -899,10 +840,7 @@ class BetterAirLLMBaseModel(GenerationMixin):
 
         with torch.inference_mode(), ThreadPoolExecutor() as executor:
 
-            # Load first layer
             if self.prefetching:
-                #with torch.cuda.stream(self.stream):
-                #state_dict = self.load_layer_to_cpu(self.layer_names[0])
                 first_streamed_layer = self._next_streamed_layer_name(0)
                 future = (
                     executor.submit(self.load_layer_to_cpu, first_streamed_layer)
@@ -925,19 +863,14 @@ class BetterAirLLMBaseModel(GenerationMixin):
                 elif self.prefetching:
                     if self.profiling_mode:
                         t = time.time()
-                    # Load current layer and prepare next layer
                     prefetch_wait_started = time.perf_counter()
                     state_dict = future.result() if future is not None else self.load_layer_to_cpu(layer_name)
                     prefetch_wait_elapsed = time.perf_counter() - prefetch_wait_started
                     self._runtime_stats['prefetch_wait_seconds'] += prefetch_wait_elapsed
                     layer_stats['prefetch_wait_seconds'] += prefetch_wait_elapsed
-                    #torch.cuda.current_stream().wait_stream(self.stream)
                     if self.profiling_mode:
                         elapsed_time = time.time() - t
                         self.profiler.add_profiling_time('load_safe_tensor_cpu_wait', elapsed_time)
-
-                    #for param_name, param in state_dict.items():
-                    #    state_dict[param_name] = param.to('cuda', non_blocking=True)
 
                     if self.profiling_mode:
                         t = time.time()
@@ -946,17 +879,12 @@ class BetterAirLLMBaseModel(GenerationMixin):
                         elapsed_time = time.time() - t
                         self.profiler.add_profiling_time('create_layer_from_state_dict', elapsed_time)
 
-                    # kick off next layer loading
-
                     next_streamed_layer = self._next_streamed_layer_name(i + 1)
                     if next_streamed_layer is not None:
-                        #with torch.cuda.stream(self.stream):
-                        #state_dict = self.load_layer_to_cpu(self.layer_names[i + 1])
+
                         if self.profiling_mode:
                             t = time.time()
                         future = executor.submit(self.load_layer_to_cpu, next_streamed_layer)
-                        #for param_name, param in state_dict.items():
-                        #    state_dict[param_name] = param.to('cuda', non_blocking=True)
 
                         if self.profiling_mode:
                             elapsed_time = time.time() - t
@@ -973,8 +901,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                         elapsed_time = time.time() - t
                         self.profiler.add_profiling_time('create_layer_from_safe_tensor', elapsed_time)
 
-                # Run layer
-
                 for j, seq in enumerate(batch):
 
                     if layer_name == self.layer_names_dict['embed']:
@@ -985,7 +911,7 @@ class BetterAirLLMBaseModel(GenerationMixin):
                         self._runtime_stats['layer_forward_seconds'] += elapsed
                         layer_stats['layer_forward_seconds'] += elapsed
                     elif layer_name == self.layer_names_dict['norm']:
-                        #batch[j] = layer(seq[torch.arange(n_seq), batch_eos[j]][:, None])
+
                         layer_forward_started = time.perf_counter()
                         batch[j] = self.run_norm(layer, seq)
                         elapsed = time.perf_counter() - layer_forward_started
@@ -1006,7 +932,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                             all_hidden_states[i].append(new_seq)
 
                         if past_key_values is not None:
-                            # join past kv
                             if cache_is_object:
                                 k_cache, v_cache = None, None
                             else:
@@ -1056,7 +981,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                             len_seq = self.get_sequence_len(seq)
 
 
-
                             position_started = time.perf_counter()
                             pos_embed_args = self.get_pos_emb_args(0, len_seq)
                             attention_mask_args = self.get_attention_mask_args(attention_mask, 0, len_seq, layer_name=layer_name)
@@ -1064,8 +988,6 @@ class BetterAirLLMBaseModel(GenerationMixin):
                             position_elapsed = time.perf_counter() - position_started
                             self._runtime_stats['position_args_seconds'] += position_elapsed
                             layer_stats['position_args_seconds'] += position_elapsed
-
-
 
 
                             if not use_cache:
@@ -1104,14 +1026,11 @@ class BetterAirLLMBaseModel(GenerationMixin):
                                     kv_cache_list[i][0].append(k_cache)
                                     kv_cache_list[i][1].append(v_cache)
 
-                                # print(f"k_cache sizes: {[len(x[1]) for x in kv_cache_list]}")
 
                         batch[j] = new_seq
 
                 if output_hidden_states:
                     all_hidden_states += (torch.cat(batch, 0),)
-
-                # Remove previous layer from memory (including buffers)
 
                 offload_started = time.perf_counter()
                 if self._should_keep_layer_resident(layer_name):
@@ -1127,7 +1046,7 @@ class BetterAirLLMBaseModel(GenerationMixin):
                 )
                 if should_clean:
                     cleanup_started = time.perf_counter()
-                    clean_memory()  # proposed by CPMP
+                    clean_memory()
                     cleanup_elapsed = time.perf_counter() - cleanup_started
                     self._runtime_stats['cleanup_seconds'] += cleanup_elapsed
                     layer_stats['cleanup_seconds'] += cleanup_elapsed
@@ -1144,10 +1063,10 @@ class BetterAirLLMBaseModel(GenerationMixin):
             else:
                 kv_cache_list = kv_cache_list[1:-2]
                 for i in range(len(kv_cache_list)):
-                    # print(f"{i} - {kv_cache_list[i][0].shape}")
+
                     kv_cache_list[i] = (torch.cat(kv_cache_list[i][0], 0), torch.cat(kv_cache_list[i][1], 0))
                 past_key_values_to_return = tuple(kv_cache_list)
-                #print(f"returning kvcache size: {kv_cache_list[0][0].shape}")
+
 
         if output_attentions:
             all_self_attns = all_self_attns[0:-2]

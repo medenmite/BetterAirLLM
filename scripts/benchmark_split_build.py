@@ -1,5 +1,3 @@
-"""Benchmark and resume BetterAirLLM incremental MoE split construction."""
-
 from __future__ import annotations
 
 import argparse
@@ -15,9 +13,9 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-from betterairllm.moe_layout_probe import load_config  # noqa: E402
-from betterairllm.moe_split_builder import IncrementalMoESplitBuilder  # noqa: E402
-from huggingface_hub import hf_hub_download  # noqa: E402
+from betterairllm.moe_layout_probe import load_config
+from betterairllm.moe_split_builder import IncrementalMoESplitBuilder
+from huggingface_hub import hf_hub_download
 
 
 def _checkpoint_path(model, cache_dir=None, token=None):

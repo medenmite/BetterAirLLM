@@ -45,11 +45,6 @@ def _fp4_lut(dtype: torch.dtype, device: torch.device | str) -> torch.Tensor:
 
 
 def unpack_mxfp4_blocks(blocks: torch.Tensor, *, dtype: torch.dtype = torch.bfloat16) -> torch.Tensor:
-    """Unpack uint8 MXFP4 nibbles into FP4 values without applying scales.
-
-    GPT-OSS/HF store two FP4 values in each uint8. The low nibble is the even
-    output position and the high nibble is the odd output position.
-    """
     blocks = blocks.to(torch.uint8)
     lut = _fp4_lut(dtype, blocks.device)
     unpacked = torch.empty(*blocks.shape[:-1], blocks.shape[-1] * 2, dtype=dtype, device=blocks.device)
@@ -65,12 +60,6 @@ def dequantize_mxfp4_projection(
     dtype: torch.dtype = torch.bfloat16,
     rows_per_chunk: int = 32768 * 1024,
 ) -> torch.Tensor:
-    """Dequantize GPT-OSS MXFP4 projection tensors.
-
-    This mirrors Hugging Face's ``convert_moe_packed_tensors`` implementation:
-    unpack FP4 values, apply block scale exponent ``scales - 127`` along the
-    last dimension, then transpose from packed storage to GPT-OSS matmul layout.
-    """
     import math
 
     blocks = blocks.to(torch.uint8)
@@ -291,7 +280,6 @@ def run_gpt_oss_selected_expert_hf_triton_timed(
 
 
 def load_gpt_oss_expert_mxfp4_shard(layer_state_dict: Mapping[str, torch.Tensor], expert_id: int) -> Dict[str, torch.Tensor]:
-    """Extract one expert from a GPT-OSS packed layer state dict."""
     suffix_map = {
         "gate_up_proj_blocks": "gate_up_proj_blocks",
         "gate_up_proj_scales": "gate_up_proj_scales",
@@ -426,12 +414,6 @@ def run_gpt_oss_selected_expert_reference_timed(
 
 
 def pack_dense_to_mxfp4_exact(dense: torch.Tensor, *, scale_exponent: int = 0) -> tuple[torch.Tensor, torch.Tensor]:
-    """Pack an exactly representable dense GPT-OSS projection for tests.
-
-    ``dense`` must be in GPT-OSS matmul layout ``[experts, in_dim, out_dim]``.
-    Values should be entries from ``FP4_VALUES`` multiplied by
-    ``2 ** scale_exponent`` so the round-trip is exact apart from dtype casts.
-    """
     if dense.ndim != 3:
         raise ValueError(f"Expected dense projection [experts, in_dim, out_dim], got {tuple(dense.shape)}")
     if dense.shape[1] % 32 != 0:

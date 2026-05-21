@@ -1,9 +1,3 @@
-"""Usable GPT-OSS strict direct-slice runner.
-
-This keeps the BetterAirLLM runtime path conservative: no dense fallback, no
-full fused expert load, and no core runtime changes.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -24,9 +18,9 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-import torch  # noqa: E402
-from betterairllm import AutoModel  # noqa: E402
-from smoke_gpt_oss_20b_one_token import (  # noqa: E402
+import torch
+from betterairllm import AutoModel
+from smoke_gpt_oss_20b_one_token import (
     _dtype_from_name,
     _is_gpt_oss_config,
     _is_probably_120b,
@@ -36,10 +30,10 @@ from smoke_gpt_oss_20b_one_token import (  # noqa: E402
     load_config,
 )
 
-try:  # noqa: E402
+try:
     from transformers import TextIteratorStreamer
-except Exception:  # pragma: no cover - old transformers layout fallback
-    from transformers.generation.streamers import TextIteratorStreamer  # type: ignore
+except Exception:
+    from transformers.generation.streamers import TextIteratorStreamer
 
 
 HARMONY_FINAL_MARKERS = (
@@ -263,7 +257,7 @@ def _generate(model, input_ids, args, profiler=None):
             if profiler is not None:
                 profiler.enable()
             result["output"] = model.generate(input_ids, **generate_kwargs)
-        except BaseException as exc:  # noqa: BLE001
+        except BaseException as exc:
             result["error"] = exc
         finally:
             if profiler is not None:

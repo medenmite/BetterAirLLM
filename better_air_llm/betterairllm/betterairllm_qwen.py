@@ -1,8 +1,6 @@
-
 from transformers import GenerationConfig
 
 from .betterairllm_base import BetterAirLLMBaseModel
-
 
 
 class BetterAirLLMQWen(BetterAirLLMBaseModel):
@@ -23,7 +21,6 @@ class BetterAirLLMQWen(BetterAirLLMBaseModel):
         return past_key_values[0][0].shape[1]
 
 
-    # customize layer names here
     def set_layer_names_dict(self):
         self.layer_names_dict = {'embed': 'transformer.wte',
                        'layer_prefix': 'transformer.h',
@@ -31,7 +28,7 @@ class BetterAirLLMQWen(BetterAirLLMBaseModel):
                        'lm_head': 'lm_head',}
 
     def get_pos_emb_args(self, len_p, len_s):
-        # Rotary positional embeddings
+
         if self.model.transformer.use_dynamic_ntk:
             ntk_alpha_list = [1.0]
         elif len_p + len_s != len_s:

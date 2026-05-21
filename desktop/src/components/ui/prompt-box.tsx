@@ -17,13 +17,13 @@ import {
   Mic,
 } from "lucide-react";
 
-// --- Utility ---
+
 type ClassValue = string | number | boolean | null | undefined;
 function cn(...inputs: ClassValue[]): string {
   return inputs.filter(Boolean).join(" ");
 }
 
-// --- Radix Primitives ---
+
 const TooltipProvider = TooltipPrimitive.Provider;
 const Tooltip = TooltipPrimitive.Root;
 const TooltipTrigger = TooltipPrimitive.Trigger;
@@ -110,7 +110,7 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-// --- Tools List ---
+
 const toolsList = [
   { id: "createImage", name: "Create an image", shortName: "Image", icon: Paintbrush },
   { id: "searchWeb", name: "Search the web", shortName: "Search", icon: Globe },
@@ -119,12 +119,12 @@ const toolsList = [
   { id: "thinkLonger", name: "Think for longer", shortName: "Think", icon: Lightbulb },
 ];
 
-// --- Props ---
+
 interface PromptBoxProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onSendMessage?: (message: string) => void;
 }
 
-// --- PromptBox Component ---
+
 export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
   ({ className, onSendMessage, ...props }, ref) => {
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -198,7 +198,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       >
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
 
-        {/* Image Preview */}
         {imagePreview && (
           <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
             <div className="relative mb-1 w-fit rounded-2xl px-1 pt-1">
@@ -215,7 +214,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
           </Dialog>
         )}
 
-        {/* Textarea */}
         <textarea
           id="chat-input"
           ref={internalTextareaRef}
@@ -228,11 +226,9 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
           {...props}
         />
 
-        {/* Bottom Toolbar */}
         <div className="p-1 pt-0">
           <TooltipProvider delayDuration={100}>
             <div className="flex items-center gap-1.5">
-              {/* Attach */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button type="button" onClick={handlePlusClick} className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-gray-400)] transition-colors hover:bg-[var(--color-gray-800)] hover:text-white focus-visible:outline-none">
@@ -243,7 +239,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                 <TooltipContent side="top" showArrow><p>Attach</p></TooltipContent>
               </Tooltip>
 
-              {/* Tools */}
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -273,7 +268,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                 </PopoverContent>
               </Popover>
 
-              {/* Active Tool Badge */}
               {activeTool && (
                 <>
                   <div className="h-4 w-px bg-[var(--color-gray-700)]" />
@@ -288,7 +282,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                 </>
               )}
 
-              {/* Right-aligned */}
               <div className="ml-auto flex items-center gap-1.5">
                 <Tooltip>
                   <TooltipTrigger asChild>

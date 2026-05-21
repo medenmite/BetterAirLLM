@@ -1,7 +1,4 @@
-
-
 from .betterairllm_base import BetterAirLLMBaseModel
-
 
 
 class BetterAirLLMLlama2(BetterAirLLMBaseModel):

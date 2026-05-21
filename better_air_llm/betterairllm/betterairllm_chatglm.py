@@ -1,8 +1,6 @@
-
 from transformers import GenerationConfig
 
 from .betterairllm_base import BetterAirLLMBaseModel
-
 
 
 class BetterAirLLMChatGLM(BetterAirLLMBaseModel):
@@ -25,8 +23,6 @@ class BetterAirLLMChatGLM(BetterAirLLMBaseModel):
     def get_past_key_values_cache_seq_len(self, past_key_values):
         return past_key_values[0][0].shape[0]
 
-
-    # customize layer names here
     def set_layer_names_dict(self):
         self.layer_names_dict = {'embed': 'transformer.embedding.word_embeddings',
                        'layer_prefix': 'transformer.encoder.layers',
@@ -35,7 +31,6 @@ class BetterAirLLMChatGLM(BetterAirLLMBaseModel):
                        'rotary_pos_emb': 'transformer.rotary_pos_emb'}
 
     def get_pos_emb_args(self, len_p, len_s):
-        # Rotary positional embeddings
         rotary_pos_emb = self.model.transformer.rotary_pos_emb(self.config.seq_length)
         rotary_pos_emb = rotary_pos_emb[None, : len_s]
         rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()

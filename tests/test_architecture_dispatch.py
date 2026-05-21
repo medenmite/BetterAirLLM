@@ -14,7 +14,7 @@ if importlib.util.find_spec("transformers") is None:
     sys.modules.setdefault("transformers", transformers_stub)
 SPEC = importlib.util.spec_from_file_location(
     "betterairllm_auto_model_for_tests",
-    ROOT / "air_llm" / "betterairllm" / "auto_model.py",
+    ROOT / "better_air_llm" / "betterairllm" / "auto_model.py",
 )
 auto_model_module = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader

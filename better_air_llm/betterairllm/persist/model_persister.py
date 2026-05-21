@@ -1,6 +1,3 @@
-
-
-
 model_persister = None
 
 class ModelPersister:

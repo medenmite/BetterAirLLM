@@ -1,5 +1,3 @@
-"""Check whether the GPT-OSS MXFP4 Triton kernel dependency is usable."""
-
 from __future__ import annotations
 
 import importlib.metadata
@@ -43,7 +41,7 @@ def main() -> int:
         if missing:
             raise RuntimeError(f"kernel loaded but missing attribute(s): {missing}")
         report["gpt_oss_kernel_available"] = True
-    except BaseException as exc:  # noqa: BLE001
+    except BaseException as exc:
         report["error"] = f"{type(exc).__name__}: {exc}"
 
     print(json.dumps(report, indent=2))

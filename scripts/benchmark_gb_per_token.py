@@ -1,11 +1,3 @@
-"""Measure BetterAirLLM bytes moved per generated token.
-
-This benchmark is intentionally byte-first. Tokens/sec alone can hide whether
-the runtime is actually avoiding BetterAirLLM-style layer reads. The reported
-GB/token values come from BetterAirLLM runtime counters around CPU shard loads and
-host-to-device tensor materialization.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -21,13 +13,13 @@ AIR_LLM_ROOT = REPO_ROOT / "air_llm"
 if str(AIR_LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(AIR_LLM_ROOT))
 
-from betterairllm import BetterAirLLMBaseModel, AutoModel  # noqa: E402
-from betterairllm.gpt_oss_mxfp4 import (  # noqa: E402
+from betterairllm import BetterAirLLMBaseModel, AutoModel
+from betterairllm.gpt_oss_mxfp4 import (
     FP4_VALUES,
     pack_dense_to_mxfp4_exact,
 )
-from betterairllm.moe_layout_probe import download_gpt_oss_one_expert_mxfp4_smoke, dry_run_gb_per_token_report  # noqa: E402
-from betterairllm.selective_fused_moe import (  # noqa: E402
+from betterairllm.moe_layout_probe import download_gpt_oss_one_expert_mxfp4_smoke, dry_run_gb_per_token_report
+from betterairllm.selective_fused_moe import (
     FakeFusedMoEAdapter,
     GptOssSelectiveFusedMoEAdapter,
     build_fake_fused_expert_shards,

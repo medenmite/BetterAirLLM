@@ -1,11 +1,3 @@
-"""Metadata-only probing for MoE checkpoint layouts.
-
-The functions in this module intentionally avoid loading model tensors. They
-only download small metadata files such as ``config.json`` and
-``model.safetensors.index.json`` unless a caller explicitly opts into a shard
-smoke test.
-"""
-
 from __future__ import annotations
 
 import json
@@ -608,12 +600,6 @@ def download_gpt_oss_one_expert_mxfp4_smoke(
     token: Optional[str] = None,
     dtype_name: str = "bfloat16",
 ) -> Dict[str, Any]:
-    """Download the shard(s) needed for one GPT-OSS expert and dequantize it.
-
-    Hugging Face stores tensors by shard file, so "minimum" means the minimum
-    checkpoint shard files containing this layer's packed expert tensors, while
-    ``safe_open.get_slice`` is used to materialize only one expert row.
-    """
     config = load_config(model_id, cache_dir=cache_dir, token=token)
     if not _is_gpt_oss_config(config):
         raise ValueError(

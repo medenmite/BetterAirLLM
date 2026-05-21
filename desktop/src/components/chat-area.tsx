@@ -3,17 +3,16 @@
 import React, { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { ChevronDown } from "lucide-react";
 import { PromptBox } from "@/components/ui/prompt-box";
 
-// ─────────────────────────── Types ───────────────────────────
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
 }
 
-// ─────────────────────────── Message Bubble ──────────────────
+
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
 
@@ -38,7 +37,6 @@ function MessageBubble({ message }: { message: Message }) {
       )}
 
       <div className={`${isUser ? "max-w-[70%]" : "flex-1 min-w-0"}`}>
-        {/* Model name label for assistant */}
         {!isUser && (
           <div className="text-sm font-medium text-[var(--color-gray-200)] mb-1 font-primary">
             BetterAirLLM
@@ -59,7 +57,7 @@ function MessageBubble({ message }: { message: Message }) {
   );
 }
 
-// ─────────────────────────── Typing Indicator ────────────────
+
 function TypingIndicator() {
   return (
     <motion.div
@@ -85,7 +83,7 @@ function TypingIndicator() {
   );
 }
 
-// ─────────────────────────── Suggestions ─────────────────────
+
 function Suggestions({ onSelect }: { onSelect: (text: string) => void }) {
   const suggestions = [
     { title: "Explain transformer attention", subtitle: "Architecture fundamentals" },
@@ -125,11 +123,10 @@ function Suggestions({ onSelect }: { onSelect: (text: string) => void }) {
   );
 }
 
-// ─────────────────────────── Home State ──────────────────────
+
 function HomeState({ onSendMessage }: { onSendMessage: (msg: string) => void }) {
   return (
     <div className="m-auto w-full max-w-6xl px-2 md:px-20 translate-y-6 py-24 text-center">
-      {/* Model Icon + Name */}
       <div className="w-full text-3xl text-[var(--color-gray-100)] text-center flex items-center gap-4 font-primary">
         <div className="w-full flex flex-col justify-center items-center">
           <div className="flex flex-row justify-center gap-2.5 md:gap-3 w-fit px-5 max-w-xl">
@@ -167,7 +164,6 @@ function HomeState({ onSendMessage }: { onSendMessage: (msg: string) => void }) 
             </div>
           </motion.div>
 
-          {/* MessageInput */}
           <motion.div
             className="text-base font-normal md:max-w-3xl w-full py-3"
             initial={{ opacity: 0, y: 10 }}
@@ -182,7 +178,6 @@ function HomeState({ onSendMessage }: { onSendMessage: (msg: string) => void }) 
         </div>
       </div>
 
-      {/* Suggestions */}
       <motion.div
         className="mx-auto max-w-2xl font-primary mt-2"
         initial={{ opacity: 0 }}
@@ -197,9 +192,9 @@ function HomeState({ onSendMessage }: { onSendMessage: (msg: string) => void }) 
   );
 }
 
-// ═════════════════════════════════════════════════════════════════
-// ████ Main Chat Area Export ████████████████████████████████████
-// ═════════════════════════════════════════════════════════════════
+
+
+
 export default function ChatArea({
   messages,
   isTyping,
@@ -227,7 +222,6 @@ export default function ChatArea({
         </div>
       ) : (
         <>
-          {/* Scrollable messages */}
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto scrollbar-hidden"
@@ -243,7 +237,6 @@ export default function ChatArea({
             </div>
           </div>
 
-          {/* Bottom-anchored PromptBox */}
           <div className="bg-[var(--color-gray-900)]">
             <div className="max-w-3xl mx-auto px-4 md:px-6 pb-4 pt-2">
               <PromptBox onSendMessage={onSendMessage} />

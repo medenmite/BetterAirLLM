@@ -1,11 +1,3 @@
-"""Known fused MoE layouts.
-
-This registry is intentionally conservative. A family is marked
-``selective_runtime=False`` until BetterAirLLM has a correctness test for that
-exact router, activation, tensor orientation, and bias layout.
-"""
-
-
 FUSED_MOE_LAYOUTS = {
     "fake_fused_moe": {
         "adapter_name": "fake_fused_moe",
